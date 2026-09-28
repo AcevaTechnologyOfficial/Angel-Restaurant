@@ -1,8 +1,9 @@
 "use client";
-import { useActionState, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useActionState, useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 import { sendEnquiry } from "@/app/private-dining/actions";
 import { idleEnquiryState, OCCASIONS, ENQUIRY_FIELDS, validateEnquiry, type EnquiryField } from "@/lib/enquiry";
 import { restaurant } from "@/lib/restaurant";
+import { Words } from "@/components/split-text";
 
 type StepId = 1 | 2 | 3;
 type Step = { id: StepId; title: string; fields: EnquiryField[] };
@@ -139,11 +140,12 @@ export function EnquiryForm() {
   }
 
   return (
-    <form id="enquiry" className="enquiry-form frame frame-strong" action={formAction} noValidate ref={formRef}>
-      <div className="form-intro" data-reveal>
-        <p className="eyebrow eyebrow-rule">Private dining</p>
-        <h2>Make it <em>an occasion.</em></h2>
-        <p>Tell us about your celebration and we’ll create something unforgettable.</p>
+    <form id="enquiry" className="enquiry-form frame frame-strong spotlight" data-spotlight action={formAction} noValidate ref={formRef}>
+      <span className="form-glow" aria-hidden="true" />
+      <div className="form-intro" data-reveal="words">
+        <p className="eyebrow eyebrow-rule rise">Private dining</p>
+        <h2><Words text="Make it" /> <em><Words text="an occasion." from={2} /></em></h2>
+        <p className="rise rise-late">Tell us about your celebration and we’ll create something unforgettable.</p>
       </div>
 
       {/* Honeypot: hidden from sighted and screen-reader users alike (see .enquiry-hp
@@ -158,7 +160,12 @@ export function EnquiryForm() {
       </div>
       <input type="hidden" name="_t" ref={startedAtRef} defaultValue={0} />
 
-      <div className="enquiry-steps" data-reveal data-stagger-children>
+      <div
+        className="enquiry-steps"
+        data-reveal
+        data-stagger-children
+        style={{ "--progress": (maxStepReached - 1) / (STEPS.length - 1) } as CSSProperties}
+      >
         {STEPS.map((step) => {
           const isOpen = !enhanced || openStep === step.id;
           const isReachable = step.id <= maxStepReached;
@@ -174,7 +181,7 @@ export function EnquiryForm() {
                 disabled={enhanced && !isReachable}
                 onClick={() => goToStep(step.id)}
               >
-                <span className="enquiry-step-num">{`0${step.id}`}</span>
+                <span className={`enquiry-step-num${isDone ? " is-done" : ""}`}>{`0${step.id}`}</span>
                 <span className="enquiry-step-title">{step.title}</span>
                 {summary && <span className="enquiry-step-summary">{summary}</span>}
               </button>

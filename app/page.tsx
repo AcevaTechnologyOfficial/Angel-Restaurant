@@ -7,6 +7,8 @@ import { Words } from "@/components/split-text";
 import { Badge, Embers } from "@/components/badge";
 import { SectionHead, ScrollWords } from "@/components/section-head";
 import { DishShowcase } from "@/components/dish-showcase";
+import { GalleryRail } from "@/components/gallery-rail";
+import { press } from "@/lib/press";
 import { CinematicSlideshow } from "@/components/cinematic-slideshow";
 import { HeroVideo } from "@/components/hero-video";
 import { restaurant } from "@/lib/restaurant";
@@ -35,8 +37,12 @@ const signature = [
 ];
 
 export default async function Home() {
-  const { specials, categories } = await getPublicMenu();
+  const { specials, categories, sections } = await getPublicMenu();
   const showcase = specials.filter(dish => dish.image).map(dish => ({ ...dish, note: categories.find(category => category.id === dish.categoryId)?.title || "" }));
+  // The bar chapter lists the real Drinks course from the published menu; no drinks are hard-coded here.
+  const drinks = sections.find(section => section.filter === "Drinks" || section.title === "Drinks");
+  // The recognition quote is the press line already published on /press, never new copy.
+  const pressQuote = press.find(item => item.note?.startsWith("“") || item.note?.startsWith("\""));
   return (
     <main id="main-content" tabIndex={-1} data-motion-pending>
       <MotionReady />
@@ -111,6 +117,7 @@ export default async function Home() {
 
       {/* 01 · From our kitchen */}
       <section id="kitchen" data-chapter="From our kitchen" className="section surface-gold tone-gold section-space">
+        <span className="hairline section-hairline" aria-hidden="true" />
         <div className="container-shell">
           <SectionHead number="01" label="From our kitchen" title="Deeply rooted." italic="Distinctly Angel." cta={<Link className="button button-glass" href="/menu"><span>Explore the menu</span>{arrow}</Link>} />
           <div className="signature-grid">
@@ -126,6 +133,7 @@ export default async function Home() {
 
       {/* 02 · The heart behind Angel */}
       <section id="story" data-chapter="The heart behind Angel" className="section surface-dark tone-dark section-space">
+        <span className="hairline section-hairline" aria-hidden="true" />
         <div className="container-shell chef-grid">
           <div className="chef-portrait" data-reveal="photo">
             <div className="photo-frame chef-photo"><CinematicSlideshow label="The food and place behind Chef Amrit Pal Singh’s story" slides={[{ name: "thali-aceva", alt: "An Indian meal served in traditional dishes, Angel editorial collection" }, { name: "interior-aceva", alt: "Angel’s dining room on 37th Avenue" }, { name: "feast-aceva", alt: "A generous table of Indian dishes at Angel" }]} /></div>
@@ -144,9 +152,17 @@ export default async function Home() {
 
       {/* 03 · Recognition */}
       <section id="recognition" data-chapter="Recognition" className="section surface-brown tone-dark section-space">
+        <span className="hairline section-hairline" aria-hidden="true" />
         <div className="grid-pattern" style={{ position: "absolute", inset: 0 }} aria-hidden="true" />
         <div className="container-shell" style={{ position: "relative" }}>
-          <SectionHead number="03" label="Recognized in New York & beyond" title="Cooking with soul." italic="Celebrated with distinction." lede="Honored with the Michelin Bib Gourmand, and featured by leading voices in food and culture." aside={<Badge text="MICHELIN · Bib Gourmand · New York · " size="10rem" />} />
+          <SectionHead number="03" label="Recognized in New York & beyond" title="Cooking with soul." italic="Celebrated with distinction." lede="Honored with the Michelin Bib Gourmand, and featured by leading voices in food and culture." centered />
+          {pressQuote && (
+            <figure className="press-quote" data-reveal="words">
+              <span className="press-quote-mark" aria-hidden="true">“</span>
+              <blockquote className="display-md rise"><span>{pressQuote.note?.replace(/^[“"]|[”"]$/g, "")}</span></blockquote>
+              <figcaption className="rise rise-late"><span className="eyebrow">{pressQuote.outlet}</span><span>{pressQuote.title}</span></figcaption>
+            </figure>
+          )}
           <div className="recognition-cards" aria-label="Press recognition" data-reveal data-stagger-children>
             {["The New Yorker", "Eater New York", "Condé Nast Traveller", "Resy"].map((name) => <div className="frame frame-strong recognition-card" key={name}><strong>{name}</strong></div>)}
           </div>
@@ -173,13 +189,56 @@ export default async function Home() {
 
       {/* 04 · Life around the table */}
       <section id="gallery" data-chapter="Little moments" className="section surface-gold tone-gold section-space">
+        <span className="hairline section-hairline" aria-hidden="true" />
         <div className="container-shell">
           <SectionHead number="04" label="Little moments, lasting memories" title="Life around" italic="the table." cta={<Link className="button button-glass" href="/gallery"><span>View gallery</span>{arrow}</Link>} />
           <DishShowcase dishes={showcase} />
         </div>
+        <GalleryRail />
       </section>
 
-      <VisitSection number="05" />
+      {/* 05 · Full bar: approved wording only (hero stat, FAQ answer) plus the published Drinks course */}
+      {drinks && drinks.items.length > 0 && (
+        <section id="bar" data-chapter="Full bar" className="section surface-dark tone-dark section-space bar-section" aria-labelledby="bar-title">
+          <span className="hairline section-hairline" aria-hidden="true" />
+          <div className="grid-pattern" style={{ position: "absolute", inset: 0 }} aria-hidden="true" />
+          <div className="bar-bg" aria-hidden="true">
+            <span className="orb orb-gold" style={{ right: "-12%", top: "-18%", width: "44vw", maxWidth: "700px", aspectRatio: "1", opacity: .5 }} />
+            <span className="orb orb-ember orb-slow" style={{ left: "-10%", bottom: "-22%", width: "36vw", maxWidth: "560px", aspectRatio: "1", opacity: .45 }} />
+          </div>
+          <div className="container-shell bar-grid" style={{ position: "relative" }}>
+            <div className="bar-media" data-reveal="photo" data-tilt>
+              <Photo name="interior-aceva" alt="Angel’s dining room on 37th Avenue" className="photo-frame bar-photo" sizes="(max-width: 767px) 100vw, 45vw" />
+              <div className="chip-float chip-float-bl frame frame-strong"><p className="eyebrow">100% halal food</p><strong>Full bar</strong></div>
+            </div>
+            <div className="bar-copy">
+              <SectionHead number="05" label="Full bar" title="Does Angel have a bar?" italic="Yes. Angel has a full bar." lede="A full bar. A warm room. Good company." id="bar-title" />
+              <ul className="bar-chips rise" data-reveal data-stagger-children aria-label="At a glance">
+                {["100% halal food", "Full bar", "MICHELIN · Bib Gourmand", "Jackson Heights · NY"].map(fact => <li className="chip" key={fact}>{fact}</li>)}
+              </ul>
+              <div className="frame frame-strong bar-card" data-reveal="words">
+                <div className="bar-card-head rise"><p className="eyebrow">{drinks.title}{drinks.kicker ? ` · ${drinks.kicker}` : ""}</p><span className="apricot-rule" data-reveal="line" aria-hidden="true" /></div>
+                <ol className="bar-list rise rise-late">
+                  {drinks.items.map((item, index) => (
+                    <li className="bar-row" key={item.id}>
+                      <span className="bar-row-num" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+                      <span className="bar-row-name">{item.name}{item.tag && <span className="bar-row-tag"> · {item.tag}</span>}</span>
+                      <span className="menu-item-leader" aria-hidden="true" />
+                      <span className="menu-item-price">{item.price}</span>
+                    </li>
+                  ))}
+                </ol>
+                <div className="bar-card-foot rise rise-late">
+                  <p className="eyebrow">Prices and availability may change.</p>
+                  <Link className="circle-btn" href="/menu" aria-label="Explore the menu"><span aria-hidden="true">↗</span></Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      <VisitSection number="06" />
       <Reservation />
     </main>
   );

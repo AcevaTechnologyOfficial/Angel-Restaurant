@@ -53,6 +53,8 @@ export function PageIntro({
 export function Reservation() {
   return (
     <section id="reserve" className="section surface-dark tone-dark section-space book" aria-labelledby="book-title">
+      <div className="book-bg" aria-hidden="true"><Photo name="thali-aceva" alt="" sizes="100vw" /></div>
+      <div className="book-scrim" aria-hidden="true" />
       <div className="container-shell">
         <div className="frame frame-strong spotlight book-card" data-spotlight data-reveal="words">
           <p className="eyebrow eyebrow-rule rise">There’s a place for you here</p>

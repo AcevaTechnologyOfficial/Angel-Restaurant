@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useSlideAdvance } from "@/lib/use-slide-advance";
 
 type Slide = { name: string; alt: string };
 
@@ -16,28 +16,10 @@ export function CinematicSlideshow({
   label: string;
   priority?: boolean;
 }) {
-  const [active, setActive] = useState(0);
-  const [paused, setPaused] = useState(true);
-  const [reducedMotion, setReducedMotion] = useState(false);
-
-  useEffect(() => {
-    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const updatePreference = () => setReducedMotion(preference.matches);
-    updatePreference();
-    preference.addEventListener("change", updatePreference);
-    return () => preference.removeEventListener("change", updatePreference);
-  }, []);
-
-  useEffect(() => {
-    if (paused || reducedMotion || slides.length < 2) return;
-    const timer = window.setInterval(() => {
-      if (!document.hidden) setActive((current) => (current + 1) % slides.length);
-    }, 5200);
-    return () => window.clearInterval(timer);
-  }, [paused, reducedMotion, slides.length]);
+  const { active, setActive, paused, setPaused, reducedMotion } = useSlideAdvance(slides.length);
 
   return (
-    <figure className={`cinematic-slideshow editorial-photo ${className}`} aria-label={label}>
+    <figure className={`cinematic-slideshow editorial-photo ${className}`} aria-label={label} data-paused={paused || reducedMotion}>
       <div className="cinematic-frames">
         {slides.map((slide, index) => (
           <div

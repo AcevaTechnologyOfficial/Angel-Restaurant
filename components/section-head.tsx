@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { Words } from "@/components/split-text";
 
 // Numbered section opener: "—— 01 · Label", a two-line display heading whose
@@ -53,18 +53,16 @@ export function SectionHead({
 // Manifesto copy: each word is a span that Motion lights up as the block scrolls
 // through the viewport. Segments marked `em` render in italic gold.
 export function ScrollWords({ segments }: { segments: { text: string; em?: boolean }[] }) {
+  const words = segments.flatMap((segment) => segment.text.split(" ").filter(Boolean).map((word) => ({ word, em: segment.em })));
+  // `--i`/`--n` drive the scroll-linked lighting range of each word (site.css .sw).
   return (
-    <>
-      {segments.map((segment, index) => (
+    <span className="sw-block" style={{ "--n": words.length } as CSSProperties}>
+      {words.map((entry, index) => (
         <span key={index}>
-          {segment.text.split(" ").filter(Boolean).map((word, wordIndex, words) => (
-            <span key={wordIndex}>
-              <span className={`sw${segment.em ? " sw-em" : ""}`}>{word}</span>
-              {wordIndex < words.length - 1 || index < segments.length - 1 ? " " : null}
-            </span>
-          ))}
+          <span className={`sw${entry.em ? " sw-em" : ""}`} style={{ "--i": index } as CSSProperties}>{entry.word}</span>
+          {index < words.length - 1 ? " " : null}
         </span>
       ))}
-    </>
+    </span>
   );
 }

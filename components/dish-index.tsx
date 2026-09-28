@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSlideAdvance } from "@/lib/use-slide-advance";
 
 type Slide = { name: string; alt: string; title: string };
 
@@ -20,7 +21,10 @@ export function DishIndex({
   priority?: boolean;
   layout?: "split" | "stacked";
 }) {
-  const [active, setActive] = useState(0);
+  const { active, setActive, setPaused, reducedMotion } = useSlideAdvance(slides.length);
+  const [manualPaused, setManualPaused] = useState(false);
+  const [hovering, setHovering] = useState(false);
+  useEffect(() => { setPaused(manualPaused || hovering); }, [manualPaused, hovering, setPaused]);
   const current = slides[active];
 
   return (
@@ -33,15 +37,15 @@ export function DishIndex({
               aria-hidden={index !== active}
               key={slide.name}
             >
-              <Image
+              {index === active && <Image
                 src={`/angel/${slide.name}.webp`}
-                alt={index === active ? slide.alt : ""}
+                alt={slide.alt}
                 fill
                 sizes="(max-width: 767px) 100vw, 55vw"
                 // Next 16: `loading="eager"` is what the LCP heuristic reads on the
                 // rendered <img>, so only the real first slide gets it.
                 loading={priority && index === 0 ? "eager" : undefined}
-              />
+              />}
             </div>
           ))}
         </div>
@@ -49,8 +53,23 @@ export function DishIndex({
           <span className="dish-index-caption-num" aria-hidden="true">{pad(active)}</span>
           <span className="dish-index-caption-name">{current.title}</span>
         </figcaption>
+        {!reducedMotion && slides.length > 1 && (
+          <button
+            type="button"
+            className="cinematic-pause dish-index-pause"
+            aria-pressed={manualPaused}
+            onClick={() => setManualPaused((value) => !value)}
+          >{manualPaused ? "Play" : "Pause"} <span aria-hidden="true">{manualPaused ? "▷" : "Ⅱ"}</span></button>
+        )}
       </figure>
-      <ul className="dish-index-list" role="list">
+      <ul
+        className="dish-index-list"
+        role="list"
+        onMouseEnter={() => setHovering(true)}
+        onMouseLeave={() => setHovering(false)}
+        onFocus={() => setHovering(true)}
+        onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node)) setHovering(false); }}
+      >
         {slides.map((slide, index) => (
           <li key={slide.name}>
             <button
