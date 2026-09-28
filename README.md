@@ -42,3 +42,16 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Ask Angel chatbot
+
+A server-side Gemini assistant at `/api/chat`. Set `GEMINI_API_KEY` in the deployment
+environment; it is read only on the server and must never be given a `NEXT_PUBLIC_`
+prefix. Answers are closed-world: the route composes them from the authoritative
+knowledge base in `lib/chat/kb.ts` plus the current public menu, blocks out-of-scope,
+profane and unintelligible input before the model is called, and routes ordinary table
+reservations to the canonical Resy listing in `lib/restaurant.ts`.
+
+`lib/chat/kb.ts` is the single canonical knowledge base (v1.8). The gate that reads it
+runs on the server only, so the knowledge base never reaches the browser; see SQA.md
+for the bundle check that enforces this.
