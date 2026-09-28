@@ -44,7 +44,7 @@ const nextConfig: NextConfig = {
   // Isolated browser runs use fresh databases and do not need a persistent compiler cache.
   ...(process.env.ANGEL_TEST_BUILD === "true" ? { experimental: { turbopackFileSystemCacheForDev: false } } : {}),
   distDir: process.env.ANGEL_TEST_BUILD === "true" ? ".next-e2e" : ".next",
-  serverExternalPackages: ["postgres", "sharp", "node:sqlite"],
+  serverExternalPackages: ["mongodb", "sharp"],
   images: {
     // Vercel creates BLOB_READ_WRITE_TOKEN automatically, but does not provide a
     // build-time hostname. Keep optimization limited to public menu uploads.

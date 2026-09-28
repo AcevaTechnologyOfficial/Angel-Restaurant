@@ -2,7 +2,7 @@ import "server-only";
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { query } from "./database";
+import { collections } from "./database";
 
 export const ADMIN_COOKIE = "angel_admin";
 export class AccessError extends Error {}
@@ -38,8 +38,11 @@ export async function limitAttempts(request: Request) {
   const source = process.env.VERCEL ? request.headers.get("x-vercel-forwarded-for") || "unknown" : "local";
   const bucket = Math.floor(Date.now() / 600000);
   const key = createHash("sha256").update(`${source}:${bucket}`).digest("hex");
-  const now = new Date().toISOString();
-  await query("DELETE FROM rate_limits WHERE expires_at < ?", [now]);
-  const rows = await query("INSERT INTO rate_limits(key,hits,expires_at) VALUES (?,1,?) ON CONFLICT(key) DO UPDATE SET hits=rate_limits.hits+1 RETURNING hits", [key, new Date(Date.now()+600000).toISOString()]);
-  if (Number(rows[0].hits) > 10) throw new AccessError("Too many attempts. Try again in ten minutes.");
+  const expiresAt = new Date(Date.now() + 600000);
+  const row = await collections().rateLimits.findOneAndUpdate(
+    { key },
+    { $inc: { hits: 1 }, $set: { expiresAt }, $setOnInsert: { key } },
+    { upsert: true, returnDocument: "after" },
+  );
+  if ((row?.hits || 1) > 10) throw new AccessError("Too many attempts. Try again in ten minutes.");
 }

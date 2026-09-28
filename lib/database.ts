@@ -1,36 +1,56 @@
-// Server infrastructure. Imported by the CLI as well as the server-only repository.
-import postgres from "postgres";
-import { mkdirSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import type { DatabaseSync } from "node:sqlite";
+// Server infrastructure shared by route handlers, Server Components, and the database CLI.
+import { attachDatabasePool } from "@vercel/functions";
+import { MongoClient, type Db } from "mongodb";
 
-type Value = string | number | null;
-type Row = Record<string, unknown>;
-const state = globalThis as typeof globalThis & { angelSql?: ReturnType<typeof postgres>; angelLocal?: DatabaseSync };
+export type CategoryDocument = { id: string; filter: string; title: string; kicker: string; sortOrder: number };
+export type MenuItemDocument = {
+  id: string; name: string; description: string; priceCents: number; categoryId: string;
+  type: "regular" | "chef-special"; image: string; available: boolean; visible: boolean;
+  sortOrder: number; vegetarian: boolean; vegan: boolean; tag: string; featured: boolean;
+  featuredDescription: string; createdAt: string; updatedAt: string;
+};
+export type MediaDocument = { id: string; url: string; createdAt: string };
+export type RateLimitDocument = { key: string; hits: number; expiresAt: Date };
+export type MigrationDocument = { id: string; appliedAt: string };
 
-export async function query<T extends Row = Row>(text: string, values: Value[] = []): Promise<T[]> {
-  if (process.env.DATABASE_URL) {
-    state.angelSql ??= postgres(process.env.DATABASE_URL, { max: Number(process.env.DB_POOL_MAX || 3), prepare: false, idle_timeout: 20, connect_timeout: 10 });
-    let index = 0;
-    const statement = text.replace(/\?/g, () => `$${++index}`);
-    return await state.angelSql.unsafe(statement, values) as unknown as T[];
+type MongoState = typeof globalThis & { angelMongoClient?: MongoClient; angelMongoDatabase?: Db; angelMongoPoolAttached?: boolean };
+const state = globalThis as MongoState;
+
+function connectionUri() {
+  const uri = process.env.MONGODB_URI;
+  if (!uri) throw new Error("MONGODB_URI is required. Connect MongoDB Atlas in Vercel or set it in .env.local.");
+  return uri;
+}
+
+export function getDatabase() {
+  if (!state.angelMongoClient) {
+    state.angelMongoClient = new MongoClient(connectionUri(), {
+      maxPoolSize: Number(process.env.DB_POOL_MAX || 3), minPoolSize: 0,
+      maxIdleTimeMS: 20_000, serverSelectionTimeoutMS: 10_000,
+    });
   }
-  if (process.env.VERCEL || (process.env.NODE_ENV === "production" && process.env.ALLOW_LOCAL_DATABASE !== "true")) {
-    throw new Error("DATABASE_URL is required for production.");
+  if (process.env.VERCEL && !state.angelMongoPoolAttached) {
+    attachDatabasePool(state.angelMongoClient);
+    state.angelMongoPoolAttached = true;
   }
-  if (!state.angelLocal) {
-    const { DatabaseSync } = await import("node:sqlite");
-    const filename = resolve(/* turbopackIgnore: true */ process.env.LOCAL_DATABASE_PATH || ".data/angel.sqlite");
-    mkdirSync(dirname(filename), { recursive: true });
-    state.angelLocal = new DatabaseSync(filename);
-    state.angelLocal.exec("PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000;");
-  }
-  return state.angelLocal.prepare(text).all(...values) as T[];
+  state.angelMongoDatabase ??= state.angelMongoClient.db(process.env.MONGODB_DB || "angel-restaurant");
+  return state.angelMongoDatabase;
+}
+
+export function collections() {
+  const database = getDatabase();
+  return {
+    categories: database.collection<CategoryDocument>("categories"),
+    menuItems: database.collection<MenuItemDocument>("menu_items"),
+    media: database.collection<MediaDocument>("media"),
+    rateLimits: database.collection<RateLimitDocument>("rate_limits"),
+    migrations: database.collection<MigrationDocument>("migrations"),
+  };
 }
 
 export async function closeDatabase() {
-  await state.angelSql?.end();
-  state.angelLocal?.close();
-  delete state.angelSql;
-  delete state.angelLocal;
+  await state.angelMongoClient?.close();
+  delete state.angelMongoClient;
+  delete state.angelMongoDatabase;
+  delete state.angelMongoPoolAttached;
 }
