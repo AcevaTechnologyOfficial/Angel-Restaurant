@@ -20,7 +20,7 @@ const PINNED_SLACK = 56;
 const EXIT_MS = 240;
 const reducedMotion = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-type Cta = "resy" | "event";
+type Cta = "resy" | "event" | "credit";
 type Turn = { id: number; role: "user" | "model"; text: string; cta?: Cta };
 
 // Placing the caret in the composer opens the on-screen keyboard on a touch
@@ -146,7 +146,7 @@ export function ChatWidget() {
       // Reservation intent is decided on the server, beside the gate, so the
       // browser never needs the knowledge base to know when to offer Resy.
       const header = response.headers.get("x-chat-cta");
-      const cta = header === "resy" || header === "event" ? (header as Cta) : undefined;
+      const cta = header === "resy" || header === "event" || header === "credit" ? (header as Cta) : undefined;
       if (type.includes("application/json")) {
         // `cta` is honoured here too: when the model is unavailable the visitor
         // still gets the booking route rather than only "try again shortly".

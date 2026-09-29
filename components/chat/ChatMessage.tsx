@@ -12,7 +12,7 @@ const NO_BLOCKS: Block[] = [];
 // Memoised: a streamed answer re-renders many times per second, and without this
 // every earlier message in the transcript re-rendered — and re-parsed its
 // markdown — on each chunk. Only the turn whose text actually changed now works.
-export const ChatMessage = memo(function ChatMessage({ role, text, cta }: { role: "user" | "model"; text: string; cta?: "resy" | "event" }) {
+export const ChatMessage = memo(function ChatMessage({ role, text, cta }: { role: "user" | "model"; text: string; cta?: "resy" | "event" | "credit" }) {
   // Parsing is memoised on the text itself, so a re-render that does not change
   // the text (a new cta, a sibling updating) costs nothing.
   const blocks = useMemo(() => (role === "model" && text ? parseMarkdown(text) : NO_BLOCKS), [role, text]);
@@ -36,5 +36,7 @@ export const ChatMessage = memo(function ChatMessage({ role, text, cta }: { role
         anchor, not next/link: a full navigation dismisses this modal, where a
         client-side one would leave it open over the new page. */}
     {cta === "event" && <a className="angel-chat-cta" href="/private-dining#enquiry"><span>Plan your celebration</span><span className="angel-chat-cta-icon" aria-hidden="true">↗</span></a>}
+    {/* Studio credit, surfaced only when a visitor asks who built the site. */}
+    {cta === "credit" && <a className="angel-chat-cta" href="https://acevatech.com" target="_blank" rel="noopener noreferrer"><span>Visit Aceva Tech</span><span className="angel-chat-cta-icon" aria-hidden="true">↗</span></a>}
   </div>;
 });

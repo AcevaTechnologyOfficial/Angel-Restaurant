@@ -18,9 +18,10 @@ const encoder = new TextEncoder();
 const UNAVAILABLE = "Please try again shortly.";
 // Which onward route the answer offers: "resy" for an ordinary table, "event"
 // for a celebration or private-event enquiry the restaurant team handles
-// through the existing form. Carried on the failure paths too, so neither
-// route disappears when the model is unavailable.
-type Cta = "resy" | "event" | undefined;
+// through the existing form, "credit" for a website-credit question. Carried
+// on the failure paths too, so neither route disappears when the model is
+// unavailable.
+type Cta = "resy" | "event" | "credit" | undefined;
 const ctaHeader = (cta: Cta): Record<string, string> => (cta ? { "x-chat-cta": cta } : {});
 
 // User-facing envelope. Distinct from apiError()'s `{ error }` shape because the

@@ -28,6 +28,9 @@ const CELEBRATION = /\b(birthdays?|anniversar(?:y|ies)|engagements?|weddings?|ce
 // A bare continuation ("how do I do that?") carries no intent words of its own,
 // so it inherits the intent of the exchange directly above it.
 const CONTINUATION = /^(?:and\s+)?(?:how|what|where|when|who)\b[^?]*\b(?:that|this|it|them|those)\b\??$|^(?:how|what)\s+(?:do|should|can|would)\s+i\b/i;
+// Who designed/built the website itself, distinct from "who made this dish" —
+// the site/website noun is required so ordinary food questions never match.
+const SITE_CREDIT = /\bwho\s+(?:built|made|designed|developed|created|coded)\s+(?:this|the)\s+(?:site|website)\b|\b(?:this|the)\s+(?:site|website)\b(?:\s+\w+){0,4}\s+(?:built|made|designed|developed|created|coded)\s+by\b|\bweb\s*(?:design(?:er)?|develop(?:er|ment)?)\b|\bsite\s+credit(?:s)?\b/i;
 // The subjects this assistant exists to talk about. strongTopics below only holds
 // the full phrases ("chef amrit", "angel restaurant"), so without this a visitor
 // asking "tell me about chef" or "who is amrit?" was refused as out of scope.
@@ -55,6 +58,7 @@ function singleUnknownWord(text: string) {
 
 function isClearlyInScope(text: string) {
   const normalized = text.toLowerCase();
+  if (SITE_CREDIT.test(normalized)) return true;
   if (PRIVATE_SERVICE.test(normalized)) return true;
   if (CELEBRATION.test(normalized)) return true;
   // Booking language is in scope on its own. Without this, "I want to make a
@@ -65,6 +69,10 @@ function isClearlyInScope(text: string) {
   if (strongTopics.some((term) => normalized.includes(term))) return true;
   if (operationalTopics.some((term) => normalized.includes(term))) return true;
   return false;
+}
+
+export function hasSiteCreditIntent(text: string) {
+  return SITE_CREDIT.test(text.toLowerCase());
 }
 
 export function hasReservationIntent(text: string) {
@@ -86,13 +94,15 @@ export function hasCelebrationIntent(text: string) {
 // Which call to action, if any, the answer should carry. Intent in the current
 // message always wins; only an explicit continuation inherits from the turn
 // above it, so the button never lingers over an unrelated later question.
-export function resolveCta(text: string, history: ChatTurn[]): "resy" | "event" | undefined {
+export function resolveCta(text: string, history: ChatTurn[]): "resy" | "event" | "credit" | undefined {
+  if (hasSiteCreditIntent(text)) return "credit";
   if (hasReservationIntent(text)) return "resy";
   if (hasCelebrationIntent(text)) return "event";
   if (!CONTINUATION.test(text.trim())) return undefined;
   for (let index = history.length - 1; index >= 0; index--) {
     const turn = history[index];
     if (turn.role !== "user") continue;
+    if (hasSiteCreditIntent(turn.text)) return "credit";
     if (hasReservationIntent(turn.text)) return "resy";
     if (hasCelebrationIntent(turn.text)) return "event";
     return undefined;

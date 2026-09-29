@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { gateInput, hasReservationIntent, hasCelebrationIntent, resolveCta, REDIRECT } from "../lib/chat/gate.ts";
+import { gateInput, hasReservationIntent, hasCelebrationIntent, hasSiteCreditIntent, resolveCta, REDIRECT } from "../lib/chat/gate.ts";
 import type { ChatTurn } from "../lib/chat/validation.ts";
 
 const allowed = (text: string, history: ChatTurn[] = []) => gateInput(text, history).allowed;
@@ -136,6 +136,27 @@ test("an ordinary table request still goes to Resy, even when it names an occasi
   ]) {
     assert.equal(resolveCta(phrase, []), "resy", `wrong CTA: ${phrase}`);
     assert.equal(hasCelebrationIntent(phrase), false, `wrongly treated as an event: ${phrase}`);
+  }
+});
+
+// "who made this" alone must stay a food question (menu items are routinely
+// asked about that way); only an explicit site/website noun should route to
+// the studio credit.
+test("website-credit questions are in scope and offer the credit CTA, without catching food questions", () => {
+  for (const phrase of [
+    "Who built this website?",
+    "who made this site?",
+    "Who designed the website?",
+    "who developed this site",
+    "Is this a custom web design?",
+    "site credits?",
+  ]) {
+    assert.equal(gateInput(phrase, []).allowed, true, `gate blocked: ${phrase}`);
+    assert.equal(hasSiteCreditIntent(phrase), true, `no credit CTA: ${phrase}`);
+    assert.equal(resolveCta(phrase, []), "credit", `wrong CTA: ${phrase}`);
+  }
+  for (const phrase of ["who made this dish?", "who made the biryani?", "who is the chef?"]) {
+    assert.equal(hasSiteCreditIntent(phrase), false, `wrongly treated as site credit: ${phrase}`);
   }
 });
 
