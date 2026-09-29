@@ -27,33 +27,60 @@
   .stat-strip dt { font-size: .58rem; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: var(--fg-muted); }
   .stat-strip dd { margin: .75rem 0 0; font-family: var(--font-editorial); font-weight: 300; font-size: clamp(2.75rem, 5vw, 4.5rem); line-height: .9; letter-spacing: -.03em; font-variant-numeric: tabular-nums; background: var(--accent-grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 
-  /* Signature plate cards */
-  .menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; align-items: start; }
-  .dish-card { display: flex; flex-direction: column; padding: .9rem .9rem 1.5rem; }
-  .dish-image { position: relative; aspect-ratio: 4 / 5; overflow: clip; border-radius: calc(var(--radius-frame) - .3rem); background: var(--sand); transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 700ms var(--ease-luxe); }
-  .dish-image img { object-fit: cover; transition: transform var(--duration-cinematic) var(--ease-luxe), filter var(--duration-cinematic) var(--ease-luxe); }
-  .dish-image::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 55%, rgba(31, 19, 13, 0.75)); pointer-events: none; }
-  @media (hover: hover) { .dish-card:hover .dish-image img { transform: scale(var(--image-scale)); filter: brightness(1.05); } }
-  .dish-card-num { position: absolute; z-index: 2; inset: auto auto .9rem 1rem; color: var(--gold-light); font-size: .6rem; font-weight: 700; letter-spacing: .2em; }
+  /* Signature plates: every chef-special dish with photography, as large
+     asymmetric hero tiles (one wide portrait plus two stacked secondaries
+     per group of three, repeating). Dishes the restaurant actually
+     photographed are ordered first in the component, so they tend to land
+     in the larger slot, but every tile shares the same treatment. */
+  .dish-feature { margin-top: clamp(3rem, 6vw, 5rem); display: grid; gap: clamp(2rem, 4vw, 3rem); }
+  .dish-feature-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: clamp(1rem, 2.5vw, 1.75rem); }
+  .dish-feature-row.is-solo { grid-template-columns: 1fr; }
+  .dish-feature-row.is-solo .dish-feature-image { aspect-ratio: 16 / 9; }
+  .dish-feature-stack { display: flex; flex-direction: column; gap: clamp(1rem, 2.5vw, 1.75rem); }
+  .dish-feature-tile { display: flex; flex-direction: column; transition: opacity 400ms var(--ease-luxe); }
+  .dish-feature:has(.dish-feature-tile:hover) .dish-feature-tile:not(:hover) { opacity: .55; }
+  .dish-feature-image { position: relative; flex: 1 1 auto; aspect-ratio: 4 / 5; overflow: clip; border-radius: calc(var(--radius-frame) - .3rem); background: var(--sand); transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 700ms var(--ease-luxe); }
+  .dish-feature-stack .dish-feature-image { aspect-ratio: 1 / 1; }
+  .dish-feature-image img { object-fit: cover; transition: transform var(--duration-cinematic) var(--ease-luxe), filter var(--duration-cinematic) var(--ease-luxe); }
+  .dish-feature-image::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 60%, rgba(31, 19, 13, 0.55)); pointer-events: none; }
+  @media (hover: hover) { .dish-feature-tile:hover .dish-feature-image img { transform: scale(var(--image-scale)); filter: brightness(1.05); } }
   .dish-tag { position: absolute; z-index: 2; inset: .9rem .9rem auto auto; }
-  .dish-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-top: 1.25rem; padding-inline: .5rem; }
-  .dish-heading h3 { font-size: clamp(1.5rem, 2.2vw, 2rem); font-weight: 300; }
-  .dish-heading span { color: var(--gold-light); font-family: var(--font-editorial); font-size: 1.1rem; white-space: nowrap; }
-  .dish-card > p { margin-top: .5rem; padding-inline: .5rem; color: var(--fg-muted); font-size: .88rem; line-height: 1.55; }
-  .dish-section { display: block; margin-top: .75rem; padding-inline: .5rem; color: var(--gold); font-size: .55rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; }
+  .dish-feature-copy { margin-top: 1.1rem; }
+  .dish-feature-num { display: block; margin-bottom: .35rem; font-family: var(--font-editorial); font-size: 1rem; font-weight: 300; color: transparent; -webkit-text-stroke: 1px rgba(61, 35, 19, 0.4); }
+  .dish-feature-head { display: flex; align-items: baseline; gap: .75rem; }
+  .dish-feature-head h3 { font-family: var(--font-editorial); font-weight: 300; font-size: clamp(1.25rem, 1.8vw, 1.5rem); line-height: 1.05; transition: transform 320ms var(--ease-luxe); }
+  .dish-feature-tile.is-large .dish-feature-head h3 { font-size: clamp(1.75rem, 2.6vw, 2.5rem); }
+  .dish-feature-tile:hover .dish-feature-head h3 { transform: translateX(4px); }
+  .dish-feature-line { flex: 1 1 auto; height: 1px; background: var(--line-strong); transform: scaleX(.25); transform-origin: left; transition: transform 400ms var(--ease-luxe); }
+  .dish-feature-tile:hover .dish-feature-line { transform: scaleX(1); }
+  .dish-feature-price { flex: none; color: var(--accent); font-family: var(--font-editorial); font-size: 1.1rem; white-space: nowrap; }
+  .dish-feature-copy > p { margin-top: .5rem; color: var(--fg-muted); font-size: .88rem; line-height: 1.55; opacity: .85; transition: opacity 320ms var(--ease-luxe); }
+  .dish-feature-tile:hover .dish-feature-copy > p { opacity: 1; }
+  .dish-feature-section { display: block; margin-top: .6rem; color: var(--gold-deep); font-size: .55rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; }
+  .dish-feature-close { display: flex; flex-direction: column; gap: .35rem; }
   .menu-note { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--line); color: var(--fg-muted); }
   .empty-menu { padding-block: 5rem; color: var(--fg-muted); text-align: center; }
 
-  /* The full card */
+  /* The full card: an editorial nav strip (hairline rules, no glass panel) over
+     a hairline-divided list, in place of the earlier boxed/pill treatment. */
   .menu-section { padding-block: var(--section-space); }
-  .menu-controls { position: sticky; top: calc(var(--nav-height) + .75rem); z-index: var(--z-raised); display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding: .6rem .75rem; border-radius: var(--radius-frame); }
-  .menu-categories { position: relative; display: flex; gap: .15rem; flex-wrap: wrap; }
-  .menu-categories button { position: relative; z-index: 1; min-height: 2.5rem; padding: 0 .9rem; border-radius: var(--radius-pill); color: var(--fg-muted); font-size: .6rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; transition: color var(--duration-ui) var(--ease-luxe), background-color var(--duration-ui) var(--ease-luxe); }
-  @media (hover: hover) { .menu-categories button:hover { color: var(--fg); background: rgba(246, 239, 226, 0.06); } }
-  .menu-categories button[aria-pressed="true"] { color: var(--brown-deep); }
+  .menu-controls { position: sticky; top: calc(var(--nav-height) + .75rem); z-index: var(--z-raised); display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding-block: .9rem; border-block: 1px solid var(--line); background: color-mix(in srgb, var(--brown-deep) 88%, transparent); backdrop-filter: blur(10px); }
+  /* Courses stay on one tidy row always: rather than wrapping raggedly (an
+     orphan course left alone on a half-empty second line) the strip scrolls
+     in place once it runs out of room, the same way it already does on
+     mobile, so the diet toggle and search stay put on the right. */
+  .menu-categories { position: relative; display: flex; flex: 1 1 auto; min-width: 0; gap: clamp(1.1rem, 2.5vw, 2rem); flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .menu-categories::-webkit-scrollbar { display: none; }
+  .menu-categories button { position: relative; z-index: 1; flex: none; min-height: 2.5rem; padding: 0 .05rem; border-bottom: 1px solid transparent; color: var(--fg-muted); font-size: .62rem; font-weight: 600; letter-spacing: .17em; text-transform: uppercase; white-space: nowrap; transition: color var(--duration-ui) var(--ease-luxe); }
+  @media (hover: hover) { .menu-categories button:hover { color: var(--fg); } }
+  .menu-categories button[aria-pressed="true"] { color: var(--fg); }
   .filter-pill { position: absolute; top: 0; left: 0; z-index: 0; height: 2.5rem; border-radius: var(--radius-pill); background-image: var(--btn-fill); box-shadow: 0 8px 24px -8px rgba(226, 189, 108, 0.9); pointer-events: none; transition: transform var(--duration-ui) var(--ease-luxe), width var(--duration-ui) var(--ease-luxe), opacity var(--duration-ui) var(--ease-luxe); }
+  /* A fine underline slides between courses instead of a filled pill: the box
+     still matches the active button's full row (so it tracks correctly when
+     the list wraps onto a second line), only its bottom edge is painted. */
+  .menu-categories .filter-pill { border-radius: 0; background: none; box-shadow: none; border-bottom: 1px solid var(--accent); }
   .diet-filter .filter-pill { height: 2.1rem; box-shadow: none; }
-  .menu-filters { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+  .menu-filters { display: flex; flex: none; align-items: center; gap: .75rem; flex-wrap: wrap; }
   .diet-filter { position: relative; display: flex; padding: .2rem; border: 1px solid var(--line-strong); border-radius: var(--radius-pill); }
   .diet-filter button { position: relative; z-index: 1; min-height: 2.1rem; padding-inline: .8rem; border-radius: var(--radius-pill); color: var(--fg-muted); font-size: .55rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; transition: background-color var(--duration-ui) var(--ease-luxe), color var(--duration-ui) var(--ease-luxe); }
   .diet-filter button[aria-pressed="true"] { color: var(--brown-deep); }
@@ -62,32 +89,34 @@
   .menu-search input { width: 10rem; min-height: 2.5rem; padding: 0; border: 0; background: transparent; color: var(--fg); font-size: .8rem; }
   .menu-search input::placeholder { color: var(--fg-muted); }
   .menu-search:focus-within { border-color: var(--gold); }
-  .menu-count { margin-block: 1.25rem 1.5rem; color: var(--fg-muted); font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: .22em; }
-  /* Compact by request: tighter frames, smaller course headers, three item columns on wide screens, so more of the card fits per screen. */
-  .menu-list { display: grid; gap: .75rem; }
-  .menu-list-section { display: grid; grid-template-columns: minmax(11rem, .32fr) minmax(0, 1.68fr); gap: clamp(1.25rem, 3vw, 2.5rem); padding: clamp(1.25rem, 2.5vw, 1.75rem) clamp(1.25rem, 2.5vw, 2rem); }
+  /* Courses read as a printed menu: a hairline rule between them, generous air
+     around each, no boxed card. */
+  .menu-list { display: grid; gap: 0; margin-top: 1.5rem; }
+  .menu-list-section { display: grid; grid-template-columns: minmax(11rem, .32fr) minmax(0, 1.68fr); gap: clamp(1.25rem, 3vw, 2.5rem); padding-block: clamp(2.25rem, 5vw, 3.5rem); border-top: 1px solid var(--line); }
   .menu-list-head { position: sticky; top: calc(var(--nav-height) + 4.5rem); align-self: start; }
   .menu-list-num { display: block; margin-bottom: .4rem; font-family: var(--font-editorial); font-size: 1.75rem; font-weight: 300; line-height: 1; color: transparent; -webkit-text-stroke: 1px rgba(226, 189, 108, 0.7); }
   .menu-list-head h2 { font-size: clamp(1.5rem, 2.2vw, 2rem); line-height: .95; }
   .menu-list-head .type-eyebrow { margin-top: .5rem; color: var(--fg-muted); }
   .menu-list-rule { margin-top: .85rem; }
-  .menu-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); gap: .9rem clamp(1.25rem, 2.5vw, 2.25rem); margin: 0; padding: 0; list-style: none; }
+  .menu-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); gap: 1.5rem clamp(1.5rem, 3vw, 2.5rem); margin: 0; padding: 0; list-style: none; }
   .menu-item { padding-left: .25rem; transition: padding-left var(--duration-ui) var(--ease-luxe); }
   @media (hover: hover) {
     .menu-item:hover { padding-left: .75rem; }
     .menu-item:hover .menu-item-head h3 { color: var(--gold-light); }
     .menu-item:hover .menu-item-leader { border-bottom-color: var(--gold); }
   }
-  .menu-item-head { display: flex; align-items: baseline; gap: .5rem; }
-  /* Chef-site menu card rows: a gold serif numeral leads every dish. */
+  .menu-item-head { display: flex; align-items: baseline; gap: .6rem; }
+  /* A gold serif numeral leads every dish. */
   .menu-item-num { flex: none; width: 1.4rem; color: var(--gold); font-family: var(--font-editorial); font-size: .95rem; line-height: 1; }
   .menu-item > p, .menu-item-diet { margin-left: 1.9rem; }
-  .menu-item-head h3 { color: var(--fg); font-family: var(--font-functional); font-size: .8rem; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; transition: color var(--duration-ui) var(--ease-luxe); }
-  .menu-item-note { color: var(--fg-muted); font-weight: 400; text-transform: none; }
-  .menu-item-leader { flex: 1 1 auto; height: 0; border-bottom: 1px dotted rgba(246, 239, 226, 0.3); transform: translateY(-.25rem); transition: border-color var(--duration-ui) var(--ease-luxe); }
-  .menu-item-price { color: var(--gold-light); font-family: var(--font-editorial); font-size: 1.05rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .menu-item > p { margin-top: .25rem; color: var(--fg-muted); font-size: .8rem; line-height: 1.5; }
-  .menu-item-diet { display: inline-block; margin-top: .35rem; padding: .2rem .55rem; border: 1px solid rgba(226, 189, 108, 0.45); border-radius: var(--radius-pill); color: var(--gold); font-size: .52rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+  /* Dish names set in the editorial serif, not a functional-sans label, so the
+     list reads like a menu card rather than a data row. */
+  .menu-item-head h3 { color: var(--fg); font-family: var(--font-editorial); font-size: clamp(1.1rem, 1.6vw, 1.3rem); font-weight: 400; letter-spacing: 0; text-transform: none; transition: color var(--duration-ui) var(--ease-luxe); }
+  .menu-item-note { color: var(--fg-muted); font-weight: 400; font-family: var(--font-functional); font-size: .78rem; text-transform: none; }
+  .menu-item-leader { flex: 1 1 auto; height: 0; border-bottom: 1px dotted rgba(246, 239, 226, 0.3); transform: translateY(-.35rem); transition: border-color var(--duration-ui) var(--ease-luxe); }
+  .menu-item-price { color: var(--gold-light); font-family: var(--font-editorial); font-size: 1.1rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .menu-item > p { margin-top: .3rem; color: var(--fg-muted); font-size: .8rem; line-height: 1.55; }
+  .menu-item-diet { display: inline-block; margin-top: .4rem; padding: .2rem .55rem; border: 1px solid rgba(226, 189, 108, 0.45); border-radius: var(--radius-pill); color: var(--gold); font-size: .52rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
 
   /* Hover-preview dish index (story page) */
   .dish-index { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(16rem, .65fr); gap: clamp(1.5rem, 4vw, 4rem); align-items: stretch; }
@@ -273,7 +302,6 @@
 }
 
 @media (max-width: 64rem) {
-  .menu-grid { grid-template-columns: repeat(2, 1fr); }
   .menu-list-section { grid-template-columns: 1fr; }
   .menu-list-head { position: static; }
   .stat-strip dl { grid-template-columns: 1fr 1fr; }
@@ -282,10 +310,11 @@
   .page-intro--photo { min-height: 78svh; }
   .page-intro-mark { font-size: 40vw; }
   .page-intro h1 { max-width: none; }
-  .menu-grid { grid-template-columns: 1fr; }
+  .dish-feature-row, .dish-feature-row.is-solo { grid-template-columns: 1fr; }
+  .dish-feature-row.is-solo .dish-feature-image { aspect-ratio: 4 / 3; }
   .menu-controls { position: static; align-items: start; flex-direction: column; }
-  .menu-categories { flex-wrap: nowrap; width: 100%; overflow-x: auto; scrollbar-width: none; }
-  .menu-categories button { flex: 0 0 auto; }
+  .menu-categories { width: 100%; gap: 1.5rem; overscroll-behavior-inline: contain; scroll-snap-type: x proximity; }
+  .menu-categories button { scroll-snap-align: start; }
   .menu-filters { width: 100%; justify-content: space-between; }
   .menu-search { flex: 1 1 auto; }
   .menu-search input { width: 100%; }

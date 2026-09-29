@@ -3,12 +3,15 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type RefObject } from "react";
 import type { PublicSection } from "@/lib/menu-types";
 import { trackEvent } from "@/lib/analytics";
+import { SectionHead } from "@/components/section-head";
 
 // Measures the pressed button in a filter group (via the container ref the
 // caller owns) and returns a style for an absolutely-positioned sibling pill
 // to slide/resize onto it, so switching courses or diets moves one shared
 // indicator instead of instantly recoloring each button. Re-measures on the
-// active value changing and on resize/wrap.
+// active value changing and on resize/wrap. Both axes are tracked (not just
+// X) so the indicator still lands on the right button when a long list of
+// courses wraps onto a second line.
 function useFilterPill(containerRef: RefObject<HTMLDivElement | null>, activeValue: string) {
   const [style, setStyle] = useState<CSSProperties>({ opacity: 0 });
 
@@ -20,7 +23,7 @@ function useFilterPill(containerRef: RefObject<HTMLDivElement | null>, activeVal
       if (!active) return;
       const containerRect = container.getBoundingClientRect();
       const rect = active.getBoundingClientRect();
-      setStyle({ transform: `translateX(${rect.left - containerRect.left}px)`, width: rect.width, opacity: 1 });
+      setStyle({ transform: `translate(${rect.left - containerRect.left}px, ${rect.top - containerRect.top}px)`, width: rect.width, opacity: 1 });
     };
     update();
     const observer = new ResizeObserver(update);
@@ -69,10 +72,19 @@ export function MenuExplorer({ menu, categories }: { menu: PublicSection[]; cate
   }, [category, diet, query, menu]);
 
   const count = sections.reduce((total, section) => total + section.items.length, 0);
+  const dietLabel = diet === "vegan" ? "Vegan" : "Vegetarian";
 
   return (
     <div className="menu-explorer">
-      <div className="menu-controls frame frame-strong">
+      <div aria-live="polite">
+        <SectionHead
+          label={`${count} ${count === 1 ? "dish" : "dishes"}`}
+          title={category}
+          aside={diet !== "all" && <span className="chip chip-solid">{dietLabel}</span>}
+        />
+      </div>
+
+      <div className="menu-controls">
         <div className="menu-categories" aria-label="Filter dishes by course" ref={categoryGroupRef}>
           <span className="filter-pill" style={categoryPillStyle} aria-hidden="true" />
           {categories.map((name) => (
@@ -97,15 +109,10 @@ export function MenuExplorer({ menu, categories }: { menu: PublicSection[]; cate
         </div>
       </div>
 
-      <p className="type-caption menu-count" aria-live="polite">
-        {count} {count === 1 ? "dish" : "dishes"} · {category}
-        {diet !== "all" && ` · ${diet === "vegan" ? "Vegan" : "Vegetarian"}`}
-      </p>
-
-      {/* Keyed on the filters so every change replays the arrival, the way .dish-card does. */}
+      {/* Keyed on the filters so every change replays the arrival, the way .dish-feature-tile does. */}
       <div className="menu-list" key={`${category}-${diet}-${query}`}>
         {sections.map((section, index) => (
-          <section className="menu-list-section frame frame-strong" key={section.id} aria-labelledby={`${section.id}-title`}>
+          <section className="menu-list-section" key={section.id} aria-labelledby={`${section.id}-title`}>
             <header className="menu-list-head" data-reveal>
               <span className="menu-list-num" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
               <h2 id={`${section.id}-title`}>{section.title}</h2>
