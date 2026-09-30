@@ -1,4 +1,4 @@
-﻿import { test, expect } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 
 const routes = ["/", "/menu", "/story", "/gallery", "/visit", "/press", "/faq", "/private-dining", "/privacy"];
 
@@ -19,7 +19,7 @@ test("public layouts stay readable on mobile and desktop", async ({ page }) => {
 test("hero video autoplays and the gallery contains keyboard focus", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
   const videos: string[] = [];
-  page.on("request", request => { if (request.url().includes("hero-loop.mp4")) videos.push(request.url()); });
+  page.on("request", request => { if (request.url().includes("hero-loop-v4.mp4")) videos.push(request.url()); });
   await page.goto("/");
   await expect(page.locator("main")).toHaveAttribute("data-motion-hydrated", "");
   await expect(page.locator(".hero-poster")).toBeVisible();

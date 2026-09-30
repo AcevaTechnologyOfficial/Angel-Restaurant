@@ -25,7 +25,7 @@ export default function Image() {
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{ fontSize: 22, fontWeight: 700, letterSpacing: 4, textTransform: "uppercase" }}>
-            Punjab at heart. New York in spirit.
+            India at heart. New York in spirit.
           </span>
           <span style={{ fontSize: 18, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase" }}>
             Est. 2019 / Jackson Heights

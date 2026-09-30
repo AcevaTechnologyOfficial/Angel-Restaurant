@@ -73,7 +73,7 @@ export function Footer() {
   return (
     <footer className="site-footer tone-dark">
       <span className="hairline footer-hairline" aria-hidden="true" />
-      <div className="footer-photo" aria-hidden="true"><Photo name="interior-aceva" alt="" sizes="100vw" /></div>
+      <div className="footer-photo" aria-hidden="true"><Photo name="room-long-table" alt="" sizes="100vw" /></div>
       <div className="footer-bg" aria-hidden="true">
         <span className="orb orb-gold" style={{ left: "-10%", top: "-10%", width: "46vw", maxWidth: "720px", aspectRatio: "1", opacity: .5 }} />
         <span className="orb orb-ember orb-slow" style={{ right: "-12%", top: "30%", width: "40vw", maxWidth: "640px", aspectRatio: "1", opacity: .5 }} />
@@ -82,7 +82,7 @@ export function Footer() {
       <div className="container-shell footer-top">
         <div className="footer-lead" data-reveal="words">
           <Link href="/" className="footer-brand rise"><span className="monogram" aria-hidden="true">A</span><span className="brand-name">angel <em>INDIAN RESTAURANT</em></span></Link>
-          <h2 className="display-lg"><Words text="Rooted in Punjab." /><br /><em><Words text="At home in Queens." from={3} /></em></h2>
+          <h2 className="display-lg"><Words text="Rooted in India." /><br /><em><Words text="At home in Queens." from={3} /></em></h2>
         </div>
         <Badge text="MICHELIN · Bib Gourmand · Jackson Heights · NY · " size="12rem" />
       </div>
@@ -118,8 +118,8 @@ export function Footer() {
       </div>
       <div className="container-shell footer-mark" aria-hidden="true"><span className="footer-wordmark">angel</span></div>
       <div className="container-shell footer-bottom">
-        <div className="footer-bottom-left"><span>© {new Date().getFullYear()} Angel Indian Restaurant</span><span>100% halal food · Full bar · Queens, New York</span></div>
-        <div className="footer-bottom-right"><Link href="/privacy">Privacy &amp; terms</Link><a className="circle-btn" href="#top" aria-label="Back to top">↑</a></div>
+        <div className="footer-bottom-left"><span>© {new Date().getFullYear()} Angel Indian Restaurant</span><span>100% halal food · Full bar · Queens, New York</span><a className="circle-btn" href="#top" aria-label="Back to top">↑</a></div>
+        <div className="footer-bottom-right"><Link href="/privacy">Privacy &amp; terms</Link></div>
       </div>
     </footer>
   );

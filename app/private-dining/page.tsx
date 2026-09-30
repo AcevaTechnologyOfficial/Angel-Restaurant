@@ -17,7 +17,7 @@ export default function PrivateDiningPage() {
         <div className="container-shell private-dining">
           <div>
             <div className="photo-frame private-media" data-reveal="photo">
-              <CinematicSlideshow className="private-cinema" priority label="Private dining atmosphere at Angel" slides={[{ name: "interior-aceva", alt: "Angel’s dining room, editorially relit" }, { name: "feast-aceva", alt: "A table of Indian dishes ready to share" }, { name: "thali-aceva", alt: "A generous Indian meal for a gathering" }]} />
+              <CinematicSlideshow className="private-cinema" priority label="Private dining atmosphere at Angel" slides={[{ name: "room-guests", alt: "Guests dining together in Angel’s dining room" }, { name: "room-long-table", alt: "A long table set for a group along the banquette at Angel" },{ name: "feast-aceva", alt: "A table of Indian dishes ready to share" }, { name: "thali-aceva", alt: "A generous Indian meal for a gathering" }]} />
             </div>
             <div className="private-copy" data-reveal="words">
               <p className="eyebrow eyebrow-rule rise">Good company deserves good food</p>

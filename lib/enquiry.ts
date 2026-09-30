@@ -1,4 +1,4 @@
-import { restaurant } from "@/lib/restaurant";
+import { restaurant } from "./restaurant.ts";
 
 export const OCCASIONS = [
   "Birthday",
@@ -12,12 +12,13 @@ export const OCCASIONS = [
 
 export const ENQUIRY_FIELDS = ["Name", "Email", "Phone", "Guests", "Date", "Occasion", "Message"] as const;
 export type EnquiryField = (typeof ENQUIRY_FIELDS)[number];
+export type EnquiryErrorField = EnquiryField | "Consent";
 export type EnquiryValues = Partial<Record<EnquiryField, string>>;
 
 export type EnquiryState = {
   status: "idle" | "success" | "error";
   code?: "validation" | "rate_limit" | "delivery" | "config";
-  fieldErrors?: Partial<Record<EnquiryField, string>>;
+  fieldErrors?: Partial<Record<EnquiryErrorField, string>>;
   values?: EnquiryValues;
 };
 
@@ -26,7 +27,7 @@ export const idleEnquiryState: EnquiryState = { status: "idle" };
 type ValidatedEnquiry = Record<EnquiryField, string>;
 type ValidationResult =
   | { ok: true; data: ValidatedEnquiry }
-  | { ok: false; fieldErrors: Partial<Record<EnquiryField, string>>; values: EnquiryValues };
+  | { ok: false; fieldErrors: Partial<Record<EnquiryErrorField, string>>; values: EnquiryValues };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -47,7 +48,7 @@ export function validateEnquiry(formData: FormData): ValidationResult {
   const raw: EnquiryValues = {};
   for (const field of ENQUIRY_FIELDS) raw[field] = readField(formData, field);
 
-  const fieldErrors: Partial<Record<EnquiryField, string>> = {};
+  const fieldErrors: Partial<Record<EnquiryErrorField, string>> = {};
 
   const name = raw.Name ?? "";
   if (name.length < 1) fieldErrors.Name = "Please tell us your name.";
@@ -58,6 +59,7 @@ export function validateEnquiry(formData: FormData): ValidationResult {
 
   const phone = raw.Phone ?? "";
   if (phone.length > 40) fieldErrors.Phone = "Phone number is too long.";
+  else if (phone && (!/^[\d\s()+.\-]+$/.test(phone) || phone.replace(/\D/g, "").length < 7)) fieldErrors.Phone = "Please enter a valid phone number.";
 
   const guestsNum = Number(raw.Guests);
   if (!Number.isInteger(guestsNum) || guestsNum < 1 || guestsNum > 1000) {
@@ -68,13 +70,13 @@ export function validateEnquiry(formData: FormData): ValidationResult {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     fieldErrors.Date = "Please choose a date.";
   } else {
-    const parsed = new Date(`${date}T00:00:00`);
-    const today = new Date();
-    const todayInNY = new Date(today.toLocaleString("en-US", { timeZone: "America/New_York" }));
-    todayInNY.setHours(0, 0, 0, 0);
-    const maxDate = new Date(todayInNY);
-    maxDate.setMonth(maxDate.getMonth() + 18);
-    if (Number.isNaN(parsed.getTime()) || parsed < todayInNY || parsed > maxDate) {
+    // Compared as UTC calendar dates against today's date in New York, so the result
+    // does not depend on the server's time zone (Vercel runs in UTC).
+    const parsed = new Date(`${date}T00:00:00Z`);
+    const [y, m, d] = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date()).split("-").map(Number);
+    const todayInNY = new Date(Date.UTC(y, m - 1, d));
+    const maxDate = new Date(Date.UTC(y, m - 1 + 18, d));
+    if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date || parsed < todayInNY || parsed > maxDate) {
       fieldErrors.Date = "Please choose a date between today and 18 months from now.";
     }
   }
@@ -88,7 +90,7 @@ export function validateEnquiry(formData: FormData): ValidationResult {
   if (message.length > 2000) fieldErrors.Message = "Message is too long.";
 
   const consent = formData.get("Consent");
-  if (consent !== "on") fieldErrors.Message = fieldErrors.Message ?? "Please confirm you agree to be contacted.";
+  if (consent !== "on") fieldErrors.Consent = "Please confirm you agree to be contacted.";
 
   if (Object.keys(fieldErrors).length > 0) {
     return { ok: false, fieldErrors, values: raw };
@@ -106,32 +108,6 @@ export function validateEnquiry(formData: FormData): ValidationResult {
       Message: message,
     },
   };
-}
-
-// Best-effort, per-warm-instance rate limiting. Serverless functions on Vercel
-// can spin up multiple instances, so this catches a burst hitting the same
-// instance, not a distributed attacker — see the plan's note on a Vercel WAF
-// rate-limit rule as the durable upgrade. Combined with the honeypot and
-// minimum-fill-time check in the action, this covers the realistic threat here.
-const WINDOW_MS = 10 * 60 * 1000;
-const MAX_PER_WINDOW = 3;
-const MAX_TRACKED_IPS = 5000;
-const hits = new Map<string, number[]>();
-
-export function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const timestamps = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
-  if (timestamps.length >= MAX_PER_WINDOW) {
-    hits.set(ip, timestamps);
-    return false;
-  }
-  timestamps.push(now);
-  hits.set(ip, timestamps);
-  if (hits.size > MAX_TRACKED_IPS) {
-    const oldestKey = hits.keys().next().value;
-    if (oldestKey !== undefined) hits.delete(oldestKey);
-  }
-  return true;
 }
 
 export async function deliverEnquiry(data: ValidatedEnquiry): Promise<boolean> {

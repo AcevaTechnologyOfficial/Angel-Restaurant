@@ -2,7 +2,7 @@
 import Link, { useLinkStatus } from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, type CSSProperties } from "react";
-const links = [["/admin/dashboard", "Overview"], ["/admin/menu", "Menu"], ["/admin/analytics", "Analytics"], ["/admin/settings", "Settings"]];
+const links = [["/admin/dashboard", "Overview"], ["/admin/menu", "Menu"], ["/admin/enquiries", "Enquiries"],["/admin/analytics", "Analytics"], ["/admin/settings", "Settings"]];
 
 function NavigationStatus() {
   const { pending } = useLinkStatus();

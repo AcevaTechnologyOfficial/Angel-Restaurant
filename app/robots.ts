@@ -14,7 +14,7 @@ export default function robots(): MetadataRoute.Robots {
     return { rules: { userAgent: "*", disallow: "/" } };
   }
   return {
-    rules: { userAgent: "*", allow: "/", disallow: ["/admin", "/api/admin"] },
+    rules: { userAgent: "*", allow: "/", disallow: ["/admin", "/api/admin", "/api/chat"] },
     sitemap: new URL("/sitemap.xml", restaurant.siteUrl).toString(),
   };
 }

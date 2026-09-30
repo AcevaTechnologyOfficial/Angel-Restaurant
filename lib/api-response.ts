@@ -1,8 +1,10 @@
 import "server-only";
-import { AccessError } from "./admin-access";
+import { AccessError, RateLimitError } from "./admin-access";
 import { InputError } from "./menu-validation";
 export function apiError(error: unknown) {
-  const status = error instanceof AccessError ? 403 : error instanceof InputError || error instanceof SyntaxError ? 400 : 503;
+  // Unexpected failures (database down, upload service error) were previously invisible in the logs.
+  if (!(error instanceof AccessError || error instanceof InputError || error instanceof SyntaxError)) console.error("Admin API error", error);
+  const status = error instanceof RateLimitError ? 429 : error instanceof AccessError ? 403 : error instanceof InputError || error instanceof SyntaxError ? 400 : 503;
   const message = error instanceof AccessError || error instanceof InputError ? error.message : status === 400 ? "Please check the submitted details." : "We could not complete that request. Please try again shortly.";
   return Response.json({ error: message }, { status, headers: { "Cache-Control": "no-store" } });
 }

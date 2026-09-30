@@ -1,57 +1,50 @@
 # Angel Indian Restaurant
 
-Dynamic menu/admin setup, deployment variables, migration commands and verification are documented in [ADMIN_SETUP.md](./ADMIN_SETUP.md).
+Restaurant website built with Next.js (App Router), TypeScript and Tailwind 4, with a MongoDB Atlas-backed menu and a private admin workspace. Routes: homepage, menu, story, gallery, private dining, visit, FAQ, press and privacy & terms, plus `/admin`.
 
-Complete restaurant website built with Next.js App Router, TypeScript, and Tailwind 4. It includes the homepage, menu, story, experience gallery, private dining, visit, FAQ, and privacy & terms routes.
+## Documents
 
-Before implementing components, read [DESIGN_SPEC.md](./DESIGN_SPEC.md). Restaurant content and unresolved facts are preserved in [CONTENT_REFERENCE.md](./CONTENT_REFERENCE.md). Global tokens and reusable styles live in `app/globals.css`; fonts are configured through `next/font` in `app/layout.tsx`.
+- [DESIGN_SPEC.md](./DESIGN_SPEC.md): read before building components. Global tokens and reusable styles live in `app/globals.css`.
+- [CONTENT_REFERENCE.md](./CONTENT_REFERENCE.md): restaurant content and unresolved facts preserved from the previous site.
+- [SQA.md](./SQA.md): speed, accessibility and security targets, plus dated inspection notes.
+- [ADMIN_SETUP.md](./ADMIN_SETUP.md): menu/admin setup, environment variables, migrations and verification.
+- `.env.example`: every environment variable the site reads.
 
-Validation: `npm run lint`, `npm run build`, then `npx tsc --noEmit`. The site's licensed font files are stored in `app/fonts` and served locally. Every future route should provide `main#main-content` for the root skip link. The private-dining form is delivered server-side via a Server Action and Resend (see `app/private-dining/actions.ts`, `lib/enquiry.ts`); it falls back to a prepared email only if delivery fails or `RESEND_API_KEY` is unset. See `.env.example` for required environment variables.
-
-## Getting Started
-
-First, run the development server:
+## Getting started
 
 ```bash
+npm install
+cp .env.example .env.local   # then fill in MONGODB_URI and ADMIN_ACCESS_KEY
+npm run db:migrate           # creates indexes
+npm run db:seed              # loads the original menu once
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Purpose |
+| --- | --- |
+| `npm run lint` | ESLint |
+| `npm run typecheck` | TypeScript, no emit |
+| `npm test` | Unit tests (`node --test`) |
+| `npm run test:e2e` | Playwright browser tests; need `TEST_MONGODB_URI` and Microsoft Edge (see ADMIN_SETUP.md) |
+| `npm run build` | Production build |
+| `npm run db:migrate`, `db:seed`, `db:verify` | MongoDB indexes, one-time seed, verification against the original snapshot |
 
-## Learn More
+Fonts (Cormorant Garamond and Manrope) are self-hosted in `app/fonts` via `next/font/local`. Every route should provide `main#main-content` for the root skip link.
 
-To learn more about Next.js, take a look at the following resources:
+## Private dining enquiries
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The form on `/private-dining` posts to a Server Action (`app/private-dining/actions.ts`). Each valid enquiry is saved to the `enquiries` collection first (`lib/enquiry-store.ts`) and reviewed in `/admin/enquiries`; a notification email is then sent through Resend when `RESEND_API_KEY` and `CONTACT_FROM_EMAIL` are set. If both saving and email fail, the form offers a prepared email instead. Submissions are rate limited per visitor through MongoDB (`lib/rate-limit.ts`).
 
 ## Ask Angel chatbot
 
-A server-side Gemini assistant at `/api/chat`. Set `GEMINI_API_KEY` in the deployment
-environment; it is read only on the server and must never be given a `NEXT_PUBLIC_`
-prefix. Answers are closed-world: the route composes them from the authoritative
-knowledge base in `lib/chat/kb.ts` plus the current public menu, blocks out-of-scope,
-profane and unintelligible input before the model is called, and routes ordinary table
-reservations to the canonical Resy listing in `lib/restaurant.ts`.
+A server-side Gemini assistant at `/api/chat`. Set `GEMINI_API_KEY` in the deployment environment; it is read only on the server and must never be given a `NEXT_PUBLIC_` prefix. Answers are closed-world: the route composes them from the knowledge base in `lib/chat/kb.ts` plus the current public menu, blocks out-of-scope, profane and unintelligible input before the model is called, and routes ordinary table reservations to the Resy listing in `lib/restaurant.ts`. Requests are limited per visitor per minute and per day, with a site-wide daily cap (`CHAT_DAILY_LIMIT`).
 
-`lib/chat/kb.ts` is the single canonical knowledge base (v1.8). The gate that reads it
-runs on the server only, so the knowledge base never reaches the browser; see SQA.md
-for the bundle check that enforces this.
+The gate and knowledge base run on the server only and are not meant to reach the browser bundle.
+
+## Deploying
+
+The site deploys on Vercel with MongoDB Atlas and Vercel Blob. See the production section of [ADMIN_SETUP.md](./ADMIN_SETUP.md) for required variables and the migration order.

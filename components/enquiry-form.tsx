@@ -1,12 +1,12 @@
 "use client";
 import { useActionState, useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 import { sendEnquiry } from "@/app/private-dining/actions";
-import { idleEnquiryState, OCCASIONS, ENQUIRY_FIELDS, validateEnquiry, type EnquiryField } from "@/lib/enquiry";
+import { idleEnquiryState, OCCASIONS, validateEnquiry, type EnquiryErrorField, type EnquiryField } from "@/lib/enquiry";
 import { restaurant } from "@/lib/restaurant";
 import { Words } from "@/components/split-text";
 
 type StepId = 1 | 2 | 3;
-type Step = { id: StepId; title: string; fields: EnquiryField[] };
+type Step = { id: StepId; title: string; fields: EnquiryErrorField[] };
 
 // A stable no-op subscription: the client/server snapshots never change after
 // mount, so this only exists to give useSyncExternalStore the hydration-safe
@@ -16,7 +16,7 @@ const noopSubscribe = () => () => {};
 const STEPS: Step[] = [
   { id: 1, title: "The occasion", fields: ["Occasion", "Date", "Guests"] },
   { id: 2, title: "About you", fields: ["Name", "Email", "Phone"] },
-  { id: 3, title: "Your vision", fields: ["Message"] },
+  { id: 3, title: "Your vision", fields: ["Message", "Consent"] },
 ];
 
 function mailtoFallback(values: Partial<Record<EnquiryField, string>> | undefined) {
@@ -67,7 +67,7 @@ export function EnquiryForm() {
 
   const [openStep, setOpenStep] = useState<StepId>(1);
   const [maxStepReached, setMaxStepReached] = useState<StepId>(1);
-  const [localErrors, setLocalErrors] = useState<Partial<Record<EnquiryField, string>>>({});
+  const [localErrors, setLocalErrors] = useState<Partial<Record<EnquiryErrorField, string>>>({});
   const [snapshot, setSnapshot] = useState<Partial<Record<EnquiryField, string>>>({});
 
   const values = state.status === "error" ? state.values : undefined;
@@ -80,8 +80,7 @@ export function EnquiryForm() {
   if (state !== handledState) {
     setHandledState(state);
     if (state.status === "error") {
-      const erroredField = ENQUIRY_FIELDS.find((field) => state.fieldErrors?.[field]);
-      const step = STEPS.find((candidate) => erroredField && candidate.fields.includes(erroredField));
+      const step = STEPS.find((candidate) => candidate.fields.some((field) => state.fieldErrors?.[field]));
       setMaxStepReached(3);
       if (step) setOpenStep(step.id);
     }
@@ -93,7 +92,7 @@ export function EnquiryForm() {
     panelRefs.current[openStep]?.querySelector<HTMLElement>("input, select, textarea")?.focus();
   }, [openStep, enhanced]);
 
-  function fieldError(field: EnquiryField) {
+  function fieldError(field: EnquiryErrorField) {
     return (state.status === "error" ? state.fieldErrors?.[field] : undefined) ?? localErrors[field];
   }
 
@@ -107,7 +106,7 @@ export function EnquiryForm() {
     if (!formRef.current) return;
     const formData = new FormData(formRef.current);
     const result = validateEnquiry(formData);
-    const stepErrors: Partial<Record<EnquiryField, string>> = {};
+    const stepErrors: Partial<Record<EnquiryErrorField, string>> = {};
     if (!result.ok) {
       for (const field of step.fields) if (result.fieldErrors[field]) stepErrors[field] = result.fieldErrors[field];
     }
@@ -198,10 +197,11 @@ export function EnquiryForm() {
                     <div className="form-grid">
                       <label>
                         Occasion
-                        <select name="Occasion" defaultValue={values?.Occasion ?? ""}>
+                        <select name="Occasion" defaultValue={values?.Occasion ?? ""} aria-invalid={Boolean(fieldError("Occasion"))} aria-describedby={fieldError("Occasion") ? "err-Occasion" : undefined}>
                           <option value="" disabled>Select an occasion</option>
                           {OCCASIONS.map((occasion) => <option key={occasion}>{occasion}</option>)}
                         </select>
+                        {fieldError("Occasion") && <span className="field-error" id="err-Occasion" role="alert">{fieldError("Occasion")}</span>}
                       </label>
                       <label>
                         Date
@@ -240,12 +240,14 @@ export function EnquiryForm() {
                     <>
                       <label className="full-width">
                         Tell us your vision
-                        <textarea name="Message" rows={4} maxLength={2000} placeholder="Share your ideas, preferences, dietary needs, or special requests…" defaultValue={values?.Message} />
+                        <textarea name="Message" rows={4} maxLength={2000} placeholder="Share your ideas, preferences, dietary needs, or special requests…" defaultValue={values?.Message} aria-invalid={Boolean(fieldError("Message"))} aria-describedby={fieldError("Message") ? "err-Message" : undefined} />
+                        {fieldError("Message") && <span className="field-error" id="err-Message" role="alert">{fieldError("Message")}</span>}
                       </label>
                       <div className="form-actions">
                         <label className="consent">
-                          <input type="checkbox" name="Consent" required />
+                          <input type="checkbox" name="Consent" required aria-invalid={Boolean(fieldError("Consent"))} aria-describedby={fieldError("Consent") ? "err-Consent" : undefined} />
                           <span>I agree to be contacted about this enquiry</span>
+                          {fieldError("Consent") && <span className="field-error" id="err-Consent" role="alert">{fieldError("Consent")}</span>}
                         </label>
                         <button className="button button-primary" type="submit" disabled={pending}>
                           {pending ? "Sending…" : "Book your occasion"}
@@ -276,20 +278,20 @@ export function EnquiryForm() {
       )}
 
       {state.status === "error" && state.code === "rate_limit" && (
-        <div className="form-status" role="status">
+        <div className="form-status" role="alert">
           <p><strong>Too many enquiries at once.</strong> Please try again in a few minutes, or call us at <a href={`tel:${restaurant.phoneHref}`}>{restaurant.phone}</a>.</p>
         </div>
       )}
 
       {state.status === "error" && (state.code === "delivery" || state.code === "config") && (
-        <div className="form-status" role="status">
+        <div className="form-status" role="alert">
           <p><strong>We couldn’t send this automatically.</strong> Please send it by email instead — we’ve prepared it for you.</p>
           <p><a href={mailtoFallback(state.values)}>Open a prepared email to {restaurant.email} ↗</a></p>
         </div>
       )}
 
       {state.status === "error" && state.code === "validation" && (
-        <div className="form-status" role="status">
+        <div className="form-status" role="alert">
           <p>Please check the highlighted fields above and try again.</p>
         </div>
       )}

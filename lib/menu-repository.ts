@@ -5,6 +5,7 @@ import { collections, type MenuItemDocument } from "./database";
 import { money, type Category, type MenuItem, type MenuInput } from "./menu-types";
 import { InputError, validateMenu } from "./menu-validation";
 import { requireAdmin } from "./admin-access";
+import { audit } from "./audit";
 
 function item(row: MenuItemDocument): MenuItem {
   return {
@@ -64,12 +65,17 @@ export async function saveMenu(input: unknown, creating: boolean, version?: stri
     const result = await menuItems.updateOne({ id: data.id, updatedAt: version }, { $set: { ...data, updatedAt: now } });
     if (!result.matchedCount) throw new InputError("This dish changed or was deleted in another session. Reload before saving.");
   }
+  await audit(creating ? "menu.create" : "menu.update", data.name, { id: data.id });
 }
 
 export async function deleteMenu(id: string, version: string) {
   await requireAdmin();
-  const result = await collections().menuItems.deleteOne({ id, updatedAt: version });
+  const { menuItems } = collections();
+  // Deletion is permanent, so the full record is kept in the audit trail and can be re-created by hand.
+  const snapshot = await menuItems.findOne({ id, updatedAt: version }, { projection: { _id: 0 } });
+  const result = await menuItems.deleteOne({ id, updatedAt: version });
   if (!result.deletedCount) throw new InputError("This dish changed or was deleted. Refresh the list and try again.");
+  await audit("menu.delete", snapshot?.name ?? id, snapshot ?? { id });
 }
 
 export async function setMenuStatus(id: string, field: "visible" | "available", enabled: boolean, version: string) {

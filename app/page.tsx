@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { MotionReady } from "@/components/motion-ready";
 import type { CSSProperties } from "react";
 import { Photo, Reservation } from "@/components/editorial";
@@ -21,7 +22,7 @@ export const dynamic = "force-dynamic";
 export const metadata = pageMetadata({
   title: { absolute: "Angel Indian Restaurant | Indian Food in Jackson Heights, Queens" },
   description:
-    "Punjabi-rooted Indian cooking by Chef Amrit Pal Singh at 75-18 37th Avenue, Jackson Heights. Michelin Bib Gourmand recognition, 100% halal food, full bar. Tuesday–Sunday, 12 PM–10 PM.",
+    "Indian cooking by Chef Amrit Pal Singh at 75-18 37th Avenue, Jackson Heights. Michelin Bib Gourmand recognition, 100% halal food, full bar. Tuesday–Sunday, 12 PM–10 PM.",
   path: "/",
 });
 
@@ -49,14 +50,14 @@ export default async function Home() {
       <MenuRefresh />
       {/* Hero */}
       <section className="hero tone-dark" id="top" aria-label="Introduction">
-        <HeroVideo src="/videos/hero-loop.mp4" poster="/angel/feast-aceva.webp" posterAlt="A generous spread of Indian curries and biryani from Angel’s editorial collection" />
+        <HeroVideo src="/videos/hero-loop-v4.mp4" poster="/angel/hero-poster.webp" posterAlt="A server bringing a plate to two guests at a table in Angel’s dining room" />
         <div className="hero-scrim" aria-hidden="true" />
         <div className="hero-spot" aria-hidden="true" />
         <Embers count={18} />
         <div className="container-shell hero-content">
           <div className="hero-grid">
             <div className="hero-copy">
-              <p className="eyebrow eyebrow-rule"><span>Punjab at heart. New York in spirit.</span></p>
+              <p className="eyebrow eyebrow-rule"><span>India at heart. New York in spirit.</span></p>
               <h1 className="display-xl">
                 <Words text="Some places" /><br /><Words text="feed you." from={2} /><br />
                 <em><Words text="Others stay" from={4} /><br /><Words text="with you." from={6} /></em>
@@ -85,13 +86,14 @@ export default async function Home() {
           <div className="certificate-highlight-copy">
             <p className="eyebrow eyebrow-rule">A place worth discovering</p>
             <h2 id="certificate-title">Recognized by the <em>MICHELIN Guide.</em></h2>
+            <Link className="certificate-highlight-link" href="/press">Explore Angel in the press <span aria-hidden="true">↗</span></Link>
             <p>Angel Indian Restaurant · Jackson Heights, New York</p>
           </div>
-          <div className="certificate-highlight-mark" aria-label="Michelin Bib Gourmand recognition">
+          <Link className="certificate-highlight-mark" href="/press" aria-label="Explore Angel press recognition">
             <span>MICHELIN</span>
             <strong>Bib Gourmand</strong>
             <span>RECOGNITION</span>
-          </div>
+          </Link>
         </div>
       </section>
 
@@ -105,7 +107,7 @@ export default async function Home() {
         <div className="container-shell manifesto-inner">
           <p className="eyebrow eyebrow-rule is-centered">Good food. Full hearts.</p>
           <h2 className="manifesto-text display-lg" data-scroll-words>
-            <ScrollWords segments={[{ text: "From a family kitchen in Punjab to a table in" }, { text: "Jackson Heights.", em: true }]} />
+            <ScrollWords segments={[{ text: "From a family kitchen in India to a table in" }, { text: "Jackson Heights.", em: true }]} />
           </h2>
           <div className="welcome-bottom" data-reveal data-stagger-children>
             <span className="editorial-star" aria-hidden="true">✳</span>
@@ -136,7 +138,7 @@ export default async function Home() {
         <span className="hairline section-hairline" aria-hidden="true" />
         <div className="container-shell chef-grid">
           <div className="chef-portrait" data-reveal="photo">
-            <div className="photo-frame chef-photo"><CinematicSlideshow label="The food and place behind Chef Amrit Pal Singh’s story" slides={[{ name: "thali-aceva", alt: "An Indian meal served in traditional dishes, Angel editorial collection" }, { name: "interior-aceva", alt: "Angel’s dining room on 37th Avenue" }, { name: "feast-aceva", alt: "A generous table of Indian dishes at Angel" }]} /></div>
+            <div className="photo-frame chef-photo"><CinematicSlideshow label="The food and place behind Chef Amrit Pal Singh’s story" slides={[{ name: "thali-aceva", alt: "An Indian meal served in traditional dishes, Angel editorial collection" }, { name: "room-long-table", alt: "Angel’s dining room on 37th Avenue" }, { name: "feast-aceva", alt: "A generous table of Indian dishes at Angel" }]} /></div>
             <div className="chip-float chip-float-tr frame frame-strong"><p className="eyebrow">A generous spirit, in every detail.</p></div>
             <Photo name="tandoori-aceva" alt="Tandoori chicken from the clay oven, a closer look" className="story-image-accent photo-frame" sizes="200px" />
           </div>
@@ -166,13 +168,23 @@ export default async function Home() {
           <div className="recognition-cards" aria-label="Press recognition" data-reveal data-stagger-children>
             {["The New Yorker", "Eater New York", "Condé Nast Traveller", "Resy"].map((name) => <div className="frame frame-strong recognition-card" key={name}><strong>{name}</strong></div>)}
           </div>
+          <div className="recognition-certificates" aria-label="Featured press recognitions" data-reveal>
+            <Link className="recognition-certificate frame frame-strong" href="/press">
+              <Image src="/Certificates/Certificate01.jpeg" alt="Framed Thrillist feature naming Angel Indian Restaurant among the 15 best Indian restaurants in NYC, October 2022" width={1083} height={1600} sizes="(max-width: 767px) 42vw, 18rem" />
+              <span><strong>Thrillist</strong><small>View the framed recognition ↗</small></span>
+            </Link>
+            <Link className="recognition-certificate frame frame-strong" href="/press">
+              <Image src="/Certificates/Certificate02.jpeg" alt="Framed Eater feature, The Best Indian Restaurants in NYC, September 2024" width={679} height={1024} sizes="(max-width: 767px) 42vw, 18rem" />
+              <span><strong>Eater</strong><small>View the framed recognition ↗</small></span>
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* Stay a little longer: pinned room scene, footage sharpens as you scroll */}
       <section className="plating tone-dark" aria-labelledby="room-title">
         <div className="plating-sticky">
-          <div className="plating-media"><Photo name="interior-aceva" alt="Angel’s dining room on 37th Avenue, editorially relit" sizes="100vw" /></div>
+          <div className="plating-media"><Photo name="room-long-table" alt="Angel’s dining room on 37th Avenue" sizes="100vw" /></div>
           <div className="plating-veil" aria-hidden="true" />
           <div className="container-shell plating-copy">
             <div className="plating-steps is-single">
@@ -208,7 +220,7 @@ export default async function Home() {
           </div>
           <div className="container-shell bar-grid" style={{ position: "relative" }}>
             <div className="bar-media" data-reveal="photo" data-tilt>
-              <Photo name="interior-aceva" alt="Angel’s dining room on 37th Avenue" className="photo-frame bar-photo" sizes="(max-width: 767px) 100vw, 45vw" />
+              <Photo name="bar-wine-service" alt="A bartender serving two glasses of red wine across the bar at Angel" className="photo-frame bar-photo" sizes="(max-width: 767px) 100vw, 45vw" />
               <div className="chip-float chip-float-bl frame frame-strong"><p className="eyebrow">100% halal food</p><strong>Full bar</strong></div>
             </div>
             <div className="bar-copy">

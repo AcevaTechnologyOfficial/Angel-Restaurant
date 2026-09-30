@@ -42,7 +42,7 @@ export const kb = {
     {
       "topic": "identity",
       "status": "confirmed",
-      "body": "Angel Indian Restaurant is in Jackson Heights, Queens, New York, and serves Indian cooking rooted in Punjab."
+      "body": "Angel Indian Restaurant is in Jackson Heights, Queens, New York, and serves Indian cooking."
     },
     {
       "topic": "chef",
@@ -52,7 +52,7 @@ export const kb = {
     {
       "topic": "origin",
       "status": "confirmed",
-      "body": "Chef Amrit Pal Singh is from Pathankot, Punjab, India."
+      "body": "Chef Amrit Pal Singh is from Pathankot, India."
     },
     {
       "topic": "training",
@@ -77,7 +77,7 @@ export const kb = {
     {
       "topic": "philosophy",
       "status": "confirmed",
-      "body": "The cooking is rooted in Punjabi traditions, with an ingredient-led approach and a focus on bold flavors without using excess cream or spice to conceal the food's flavor."
+      "body": "The cooking is rooted in Indian traditions, with an ingredient-led approach and a focus on bold flavors without using excess cream or spice to conceal the food's flavor."
     },
     {
       "topic": "halal",

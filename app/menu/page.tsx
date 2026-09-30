@@ -33,7 +33,8 @@ const menuJsonLd = (menu: PublicSection[]) => ({
       suitableForDiet: [
         dish.vegan && "https://schema.org/VeganDiet",
         dish.vegetarian && "https://schema.org/VegetarianDiet",
-        "https://schema.org/HalalDiet",
+        // The published claim is "100% halal food", so drinks are not labelled.
+        section.id !== "drinks" && "https://schema.org/HalalDiet",
       ].filter(Boolean),
     })),
   })),

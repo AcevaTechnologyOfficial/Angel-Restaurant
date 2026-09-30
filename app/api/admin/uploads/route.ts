@@ -3,7 +3,9 @@ import { put, del } from "@vercel/blob";
 import { randomUUID } from "node:crypto";
 import { mkdir, writeFile, unlink } from "node:fs/promises";
 import { resolve } from "node:path";
-import { requireAdmin, sameOrigin } from "@/lib/admin-access";
+import { RateLimitError, requireAdmin, sameOrigin } from "@/lib/admin-access";
+import { audit } from "@/lib/audit";
+import { withinLimit } from "@/lib/rate-limit";
 import { apiError, readBounded } from "@/lib/api-response";
 import { InputError } from "@/lib/menu-validation";
 import { collections } from "@/lib/database";
@@ -12,6 +14,8 @@ export const runtime = "nodejs";
 export async function POST(request: Request) {
   try {
     await requireAdmin(); sameOrigin(request);
+    // Uploads are never garbage-collected, so cap how many one hour can add.
+    if (!(await withinLimit("upload", "admin", 60 * 60_000, 30, false))) throw new RateLimitError("Too many uploads this hour. Try again later.");
     if (!["image/jpeg", "image/png", "image/webp"].includes(request.headers.get("content-type") || "")) throw new InputError("Choose a JPEG, PNG or WebP image.");
     const input = await readBounded(request, 4 * 1024 * 1024);
     let image: Buffer;
@@ -39,6 +43,7 @@ export async function POST(request: Request) {
     }
     try { await collections().media.insertOne({ id, url, createdAt: new Date().toISOString() }); }
     catch (error) { await cleanup().catch(() => {}); throw error; }
+    await audit("upload", id);
     return Response.json({ url }, { status: 201 });
   } catch (error) { return apiError(error); }
 }

@@ -25,7 +25,7 @@ const functional = localFont({
 });
 
 const description =
-  "Authentic Punjabi-rooted Indian cooking by Chef Amrit Pal Singh in Jackson Heights, Queens. Michelin Bib Gourmand recognition, 100% halal food, full bar. Tuesday–Sunday, 12 PM–10 PM.";
+  "Authentic Indian cooking by Chef Amrit Pal Singh in Jackson Heights, Queens. Michelin Bib Gourmand recognition, 100% halal food, full bar. Tuesday–Sunday, 12 PM–10 PM.";
 
 const isProduction = process.env.VERCEL_ENV
   ? process.env.VERCEL_ENV === "production"
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     "Angel Indian Restaurant",
     "Indian restaurant Jackson Heights",
     "Indian restaurant Queens",
-    "Punjabi restaurant NYC",
+    "Indian restaurant Jackson Heights",
     "halal Indian food Queens",
     "tandoori chicken Queens",
     "biryani Jackson Heights",
@@ -91,11 +91,11 @@ const structuredData = {
   "@type": "Restaurant",
   name: restaurant.name,
   url: restaurant.siteUrl,
-  telephone: restaurant.phone,
+  telephone: `+1${restaurant.phoneHref}`,
   email: restaurant.email,
-  image: new URL("/angel/interior-aceva.webp", restaurant.siteUrl).toString(),
+  image: new URL("/angel/room-long-table.webp", restaurant.siteUrl).toString(),
   hasMenu: new URL("/menu", restaurant.siteUrl).toString(),
-  servesCuisine: ["Indian", "Punjabi"],
+  servesCuisine: ["Indian"],
   address: {
     "@type": "PostalAddress",
     streetAddress: "75-18 37th Avenue",
@@ -113,7 +113,11 @@ const structuredData = {
     },
   ],
   acceptsReservations: true,
-  reservations: restaurant.resy,
+  potentialAction: {
+    "@type": "ReserveAction",
+    target: { "@type": "EntryPoint", urlTemplate: restaurant.resy, actionPlatform: ["http://schema.org/DesktopWebPlatform", "http://schema.org/MobileWebPlatform"] },
+    result: { "@type": "Reservation", name: "Reserve a table" },
+  },
   sameAs: [restaurant.instagram, restaurant.resy],
 };
 

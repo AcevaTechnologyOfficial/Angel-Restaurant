@@ -11,6 +11,14 @@ export type MenuItemDocument = {
 };
 export type MediaDocument = { id: string; url: string; createdAt: string };
 export type RateLimitDocument = { key: string; hits: number; expiresAt: Date };
+export type EnquiryStatus = "new" | "contacted" | "closed";
+export type EnquiryDocument = {
+  id: string; name: string; email: string; phone: string; guests: number; date: string; occasion: string; message: string;
+  status: EnquiryStatus; emailed: boolean; createdAt: string;
+};
+// Only a hash of the session token is stored, so a database read cannot be replayed as a login.
+export type AdminSessionDocument = { tokenHash: string; createdAt: string; expiresAt: Date };
+export type AuditDocument = { at: string; action: string; target: string; detail?: unknown };
 export type MigrationDocument = { id: string; appliedAt: string };
 
 type MongoState = typeof globalThis & { angelMongoClient?: MongoClient; angelMongoDatabase?: Db; angelMongoPoolAttached?: boolean };
@@ -28,6 +36,19 @@ export function getDatabase() {
       maxPoolSize: Number(process.env.DB_POOL_MAX || 3), minPoolSize: 0,
       maxIdleTimeMS: 20_000, serverSelectionTimeoutMS: 10_000,
     });
+    // A closed client is unusable ("Topology is closed"); drop the cached one so the next call reconnects.
+    const client = state.angelMongoClient;
+    const forget = () => {
+      if (state.angelMongoClient !== client) return;
+      delete state.angelMongoClient;
+      delete state.angelMongoDatabase;
+      delete state.angelMongoPoolAttached;
+    };
+    client.on("close", forget);
+    // A failed first connection (network drop, Atlas IP allowlist, DNS) makes the driver close its topology
+    // without emitting "close", which would leave this dead client cached and every later query failing
+    // with "Topology is closed". Connect eagerly (queries share this attempt) and discard the client on failure.
+    client.connect().catch(() => { forget(); void client.close().catch(() => {}); });
   }
   if (process.env.VERCEL && !state.angelMongoPoolAttached) {
     attachDatabasePool(state.angelMongoClient);
@@ -43,6 +64,9 @@ export function collections() {
     categories: database.collection<CategoryDocument>("categories"),
     menuItems: database.collection<MenuItemDocument>("menu_items"),
     media: database.collection<MediaDocument>("media"),
+    adminSessions: database.collection<AdminSessionDocument>("admin_sessions"),
+    audit: database.collection<AuditDocument>("audit_log"),
+    enquiries: database.collection<EnquiryDocument>("enquiries"),
     rateLimits: database.collection<RateLimitDocument>("rate_limits"),
     migrations: database.collection<MigrationDocument>("migrations"),
   };

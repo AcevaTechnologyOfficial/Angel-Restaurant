@@ -1,18 +1,19 @@
 import "server-only";
-const WINDOW_MS = 60_000;
-const MAX_REQUESTS = 20;
-const windows = new Map<string, { started: number; count: number }>();
-// Rate-limit identity. Only Vercel's own proxy header may be trusted: x-real-ip
-// and x-forwarded-for are ordinary request headers, so a caller can rotate them
-// per request and defeat the limiter entirely — which matters here because the
-// endpoint spends a metered API key. Mirrors limitAttempts() in lib/admin-access.ts.
-// Off Vercel there is no trusted source, so every caller shares one bucket.
-export function rateLimitKey(request: Request) {
-  return process.env.VERCEL ? request.headers.get("x-vercel-forwarded-for")?.trim() || "unknown" : "local";
+import { clientSource, withinLimit } from "@/lib/rate-limit";
+
+const PER_MINUTE = 20;
+const PER_DAY = 200;
+const DAY_MS = 24 * 60 * 60 * 1000;
+// Site-wide ceiling on model calls per day, so a distributed abuser cannot run up the metered API key.
+const GLOBAL_PER_DAY = Number(process.env.CHAT_DAILY_LIMIT || 2000);
+
+export const rateLimitKey = (request: Request) => clientSource(request.headers);
+
+// Fails closed: if the counters are unreachable the chat pauses rather than spending unmetered.
+export async function rateLimit(source: string) {
+  return (
+    (await withinLimit("chat-minute", source, 60_000, PER_MINUTE, false)) &&
+    (await withinLimit("chat-day", source, DAY_MS, PER_DAY, false)) &&
+    (await withinLimit("chat-global", "all", DAY_MS, GLOBAL_PER_DAY, false))
+  );
 }
-export function rateLimit(key: string) {
-  const now = Date.now(); const current = windows.get(key);
-  if (!current || now - current.started >= WINDOW_MS) { windows.set(key, { started: now, count: 1 }); return true; }
-  current.count += 1; return current.count <= MAX_REQUESTS;
-}
-export function resetRateLimits() { windows.clear(); }

@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: restaurant.name,
     short_name: "Angel",
-    description: "Punjabi-rooted Indian cooking in Jackson Heights, Queens.",
+    description: "Indian cooking in Jackson Heights, Queens.",
     start_url: "/",
     display: "browser",
     background_color: "#25130D",

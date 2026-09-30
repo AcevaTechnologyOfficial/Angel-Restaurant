@@ -15,8 +15,10 @@ export function HeroVideo({ src, poster, posterAlt }: { src: string; poster: str
     if (!video || failed) return;
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
     let inView = false;
+    // Visitors who asked their browser to save data keep the poster; the Play button still works.
+    const saveData = Boolean((navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData);
     const syncPlayback = () => {
-      if (document.hidden || preference.matches || !inView || manuallyPaused.current) {
+      if (document.hidden || preference.matches || saveData || !inView || manuallyPaused.current) {
         video.pause();
       } else {
         video.play().catch(() => setPlaying(false));

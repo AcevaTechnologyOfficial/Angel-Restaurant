@@ -1,6 +1,7 @@
 import { PageIntro, Reservation } from "@/components/editorial";
 import { faqs } from "@/lib/restaurant";
 import { JsonLd } from "@/components/json-ld";
+import { FAQList } from "@/components/faq-list";
 import { pageMetadata, breadcrumbList } from "@/lib/seo";
 
 export const metadata = pageMetadata({ title: "FAQ: Reservations, Halal, Hours & Parking", description: "Reservations, hours, halal food, vegetarian options, private events, and how to find Angel Indian Restaurant in Jackson Heights, Queens.", path: "/faq" });
@@ -14,14 +15,7 @@ export default function FAQPage() {
       <JsonLd data={faqJsonLd} />
       <PageIntro eyebrow="Before you join us" title="A few" italic="good answers." mark="Ask" />
       <section className="surface-dark tone-dark section" aria-label="Frequently asked questions">
-        <div className="container-shell faq-list" data-reveal data-stagger-children>
-          {faqs.map(([question, answer], index) => (
-            <details className="frame frame-strong" key={question}>
-              <summary><span className="type-caption">0{index + 1}</span><span className="faq-question">{question}</span><span className="faq-icon" aria-hidden="true">+</span></summary>
-              <p>{answer}</p>
-            </details>
-          ))}
-        </div>
+        <FAQList faqs={faqs} />
       </section>
       <Reservation />
     </main>

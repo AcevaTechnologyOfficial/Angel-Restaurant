@@ -18,8 +18,13 @@ const dishId = (name: string) => {
 
 async function migrate() {
   const database = getDatabase();
-  const { categories, menuItems, media, rateLimits, migrations } = collections();
+  const { categories, menuItems, media, rateLimits, migrations, enquiries, adminSessions, audit } = collections();
   await Promise.all([
+    adminSessions.createIndex({ tokenHash: 1 }, { unique: true, name: "admin_session_token" }),
+    adminSessions.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0, name: "admin_session_expiry" }),
+    audit.createIndex({ at: -1 }, { name: "audit_recent" }),
+    enquiries.createIndex({ id: 1 }, { unique: true, name: "enquiry_id" }),
+    enquiries.createIndex({ createdAt: -1 }, { name: "enquiry_recent" }),
     categories.createIndex({ id: 1 }, { unique: true, name: "category_id" }),
     menuItems.createIndex({ id: 1 }, { unique: true, name: "menu_item_id" }),
     menuItems.createIndex({ visible: 1, available: 1, categoryId: 1, sortOrder: 1 }, { name: "public_menu_order" }),

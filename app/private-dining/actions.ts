@@ -1,7 +1,9 @@
 "use server";
 
 import { headers } from "next/headers";
-import { checkRateLimit, deliverEnquiry, validateEnquiry, type EnquiryState } from "@/lib/enquiry";
+import { markEnquiryEmailed, saveEnquiry } from "@/lib/enquiry-store";
+import { clientSource, withinLimit } from "@/lib/rate-limit";
+import { deliverEnquiry, validateEnquiry, type EnquiryState } from "@/lib/enquiry";
 
 // Every export from a "use server" file becomes a public POST endpoint
 // (node_modules/next/dist/docs/01-app/02-guides/server-actions.md, "Security"),
@@ -21,11 +23,8 @@ export async function sendEnquiry(_prev: EnquiryState, formData: FormData): Prom
   if (startedAt > 0 && Date.now() - startedAt < 3000) return { status: "success" };
 
   const requestHeaders = await headers();
-  const ip =
-    requestHeaders.get("x-real-ip") ??
-    requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    "unknown";
-  if (!checkRateLimit(ip)) {
+  // Fails open: if the counter store is down the enquiry is still worth taking.
+  if (!(await withinLimit("enquiry", clientSource(requestHeaders), 10 * 60_000, 3, true))) {
     return { status: "error", code: "rate_limit" };
   }
 
@@ -34,8 +33,11 @@ export async function sendEnquiry(_prev: EnquiryState, formData: FormData): Prom
     return { status: "error", code: "validation", fieldErrors: result.fieldErrors, values: result.values };
   }
 
+  // Store first so the lead survives an email failure; email is then best-effort.
+  const stored = await saveEnquiry(result.data);
   const delivered = await deliverEnquiry(result.data);
-  if (!delivered) {
+  if (stored && delivered) await markEnquiryEmailed(stored.id);
+  if (!stored && !delivered) {
     return { status: "error", code: "delivery", values: result.data };
   }
 

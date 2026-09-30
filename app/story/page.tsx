@@ -4,14 +4,14 @@ import { Words } from "@/components/split-text";
 import { JsonLd } from "@/components/json-ld";
 import { pageMetadata, breadcrumbList } from "@/lib/seo";
 
-export const metadata = pageMetadata({ title: "Our Story: Chef Amrit Pal Singh", description: "How Chef Amrit Pal Singh brought Punjab’s family kitchens to Jackson Heights, Queens, and opened Angel Indian Restaurant in 2019.", path: "/story" });
+export const metadata = pageMetadata({ title: "Our Story: Chef Amrit Pal Singh", description: "How Chef Amrit Pal Singh brought India’s family kitchens to Jackson Heights, Queens, and opened Angel Indian Restaurant in 2019.", path: "/story" });
 const breadcrumbs = breadcrumbList([{ name: "Our story", path: "/story" }]);
 
 export default function StoryPage() {
   return (
     <main id="main-content" tabIndex={-1}>
       <JsonLd data={breadcrumbs} />
-      <PageIntro eyebrow="Our story" title="Punjab in our roots." italic="Queens in our heart." image={{ name: "thali-aceva", alt: "A generous Indian meal served in traditional dishes" }} mark="Story" />
+      <PageIntro eyebrow="Our story" title="India in our roots." italic="Queens in our heart." image={{ name: "thali-aceva", alt: "A generous Indian meal served in traditional dishes" }} mark="Story" />
       <section className="surface-gold tone-gold section" aria-labelledby="chef-title">
         <div className="container-shell story-feature">
           <div className="story-media" data-reveal="photo">
@@ -20,7 +20,7 @@ export default function StoryPage() {
           <div data-reveal="words">
             <p className="eyebrow eyebrow-rule rise">Chef Amrit Pal Singh</p>
             <h2 className="display-lg" id="chef-title"><Words text="It began in" /><br /><em><Words text="a family kitchen." from={3} /></em></h2>
-            <p className="rise rise-late">In Pathankot, Punjab, Amrit Pal Singh grew up around food and family. His journey took him to culinary training in Australia, then to the kitchens of Rahi and Adda in New York.</p>
+            <p className="rise rise-late">In Pathankot, India, Amrit Pal Singh grew up around food and family. His journey took him to culinary training in Australia, then to the kitchens of Rahi and Adda in New York.</p>
             <p className="rise rise-late">In October 2019, he invested his savings in a restaurant of his own in Jackson Heights. He named it Angel, after his young daughter.</p>
             <p className="rise rise-late">The approach has stayed close to home: preserve the true taste of each ingredient. Give it care, rather than hiding it behind excess cream or spice.</p>
           </div>
@@ -38,11 +38,11 @@ export default function StoryPage() {
           <div data-reveal="words">
             <p className="eyebrow eyebrow-rule rise">At home in Jackson Heights</p>
             <h2 className="display-lg" id="home-title"><Words text="A neighborhood table." /><br /><em><Words text="A warm welcome." from={3} /></em></h2>
-            <p className="rise rise-late">A Michelin Bib Gourmand, rooted in Queens. Angel brings Punjabi heritage, Indian cooking, a full bar, and warm hospitality together on 37th Avenue.</p>
+            <p className="rise rise-late">A Michelin Bib Gourmand, rooted in Queens. Angel brings Indian cooking, a full bar, and warm hospitality together on 37th Avenue.</p>
             <p className="rise rise-late">Come for lunch. Settle in for dinner. Share a few favorites and make yourself at home.</p>
           </div>
           <div className="story-media" data-reveal="photo">
-            <DishIndex layout="stacked" label="Hover or tap to preview Angel at home in Jackson Heights" slides={[{ name: "interior-aceva", alt: "Angel’s dining room on 37th Avenue", title: "The Dining Room" }, { name: "feast-aceva", alt: "A generous table at Angel in Jackson Heights", title: "A Table to Share" }, { name: "dal-naan-aceva", alt: "Dal makhni, naan and rice made for sharing", title: "Dal Makhni & Naan" }]} />
+            <DishIndex layout="stacked" label="Hover or tap to preview Angel at home in Jackson Heights" slides={[{ name: "room-long-table", alt: "Angel’s dining room on 37th Avenue", title: "The Dining Room" }, { name: "feast-aceva", alt: "A generous table at Angel in Jackson Heights", title: "A Table to Share" }, { name: "dal-naan-aceva", alt: "Dal makhni, naan and rice made for sharing", title: "Dal Makhni & Naan" }]} />
           </div>
         </div>
       </section>
