@@ -2,7 +2,7 @@ import { requireAdmin, sameOrigin } from "@/lib/admin-access";
 import { apiError, readJson } from "@/lib/api-response";
 import { deleteMenu, saveMenu, setMenuStatus } from "@/lib/menu-repository";
 import { InputError } from "@/lib/menu-validation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 type Context = { params: Promise<{ id: string }> };
 async function mutate(request: Request, context: Context) {
   try {
@@ -15,7 +15,7 @@ async function mutate(request: Request, context: Context) {
       if ((input.field !== "visible" && input.field !== "available") || typeof input.enabled !== "boolean") throw new InputError("Choose a valid status.");
       await setMenuStatus(id, input.field, input.enabled, input.updatedAt);
     } else await saveMenu({ ...input, id }, false, input.updatedAt);
-    revalidatePath("/menu"); revalidatePath("/"); revalidatePath("/admin", "layout");
+    revalidateTag("public-menu", { expire: 0 }); revalidatePath("/menu"); revalidatePath("/"); revalidatePath("/admin", "layout");
     return Response.json({ ok: true });
   } catch (error) { return apiError(error); }
 }

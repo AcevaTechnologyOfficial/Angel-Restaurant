@@ -89,6 +89,14 @@
   .menu-search input { width: 10rem; min-height: 2.5rem; padding: 0; border: 0; background: transparent; color: var(--fg); font-size: .8rem; }
   .menu-search input::placeholder { color: var(--fg-muted); }
   .menu-search:focus-within { border-color: var(--gold); }
+  /* Tablet widths: the course tabs, diet pills and search cannot share one row without the tabs clipping mid-word, so the tabs take their own row. */
+  @media (min-width: 48.01rem) and (max-width: 75rem) {
+    .menu-controls { flex-wrap: wrap; row-gap: .25rem; }
+    .menu-categories { flex: 1 1 100%; }
+    .menu-filters { flex: 1 1 100%; justify-content: space-between; }
+    .menu-search { flex: 1 1 auto; }
+    .menu-search input { width: 100%; }
+  }
   /* Courses read as a printed menu: a hairline rule between them, generous air
      around each, no boxed card. */
   .menu-list { display: grid; gap: 0; margin-top: 1.5rem; }
@@ -185,6 +193,10 @@
   .contact-section > div:last-child > a:not(.text-link) { color: var(--fg); font-family: var(--font-editorial); font-size: clamp(1.5rem, 3vw, 2.5rem); font-weight: 300; text-decoration: none; background: linear-gradient(var(--gold), var(--gold)) no-repeat 0 100% / 0 1px; transition: background-size var(--duration-reveal) var(--ease-luxe), color var(--duration-ui) var(--ease-luxe); }
   @media (hover: hover) { .contact-section > div:last-child > a:not(.text-link):hover { background-size: 100% 1px; color: var(--gold-light); } }
   .contact-section p { color: var(--fg-muted); }
+  /* Grid children default to min-width:auto, so the long email address pushed the card contents past its edge on 320-360px phones. */
+  .contact-section > div { min-width: 0; }
+  .contact-section a, .contact-section p { overflow-wrap: anywhere; }
+  @media (max-width: 30rem) { .contact-section { padding: 1.75rem 1.25rem; } .contact-section > div:last-child > a:not(.text-link) { font-size: clamp(1.1rem, 5.6vw, 1.5rem); } }
 
   /* FAQ */
   .faq-list { display: grid; gap: .75rem; padding-block: var(--section-space); }
@@ -311,6 +323,8 @@
   .enquiry-step-summary { overflow: hidden; color: var(--fg-muted); font-size: .8rem; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
   .enquiry-step-panel { display: grid; grid-template-rows: 1fr; transition: grid-template-rows var(--duration-reveal) var(--ease-luxe); }
   .enquiry-step-panel[inert] { grid-template-rows: 0fr; }
+  /* The inner box keeps its bottom padding when collapsed, and overflow clips at the padding edge, so the first field label of a closed step peeked out under its header. */
+  .enquiry-step-panel[inert] .enquiry-step-panel-inner { padding-bottom: 0; }
   .enquiry-step-panel-inner { overflow: hidden; padding-bottom: clamp(1.25rem, 3vw, 1.75rem); padding-left: 3.25rem; }
   .enquiry-step-nav { margin-top: .25rem; }
   .enquiry-form .form-status { grid-column: 1 / -1; }
@@ -361,6 +375,11 @@
   .enquiry-form { display: block; padding: clamp(1.5rem, 5vw, 2.5rem); }
   .enquiry-step-summary { display: none; }
   .enquiry-step-panel-inner { padding-left: 1.5rem; }
+}
+/* iPad portrait: the two-column form leaves the fields about 300px wide, which truncates the occasion list; stack the intro above the steps instead. */
+@media (min-width: 48.01rem) and (max-width: 64rem) {
+  .enquiry-form { display: block; }
+  .enquiry-form .enquiry-steps { margin-top: 2rem; }
 }
 @media (prefers-reduced-motion: reduce) {
   .dish-image, .gallery-grid .editorial-photo { transform: none; }

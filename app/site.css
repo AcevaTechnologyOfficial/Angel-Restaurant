@@ -28,7 +28,7 @@
   .rise-late ~ .rise-late { --rise-delay: 850ms; }
   .rise-late ~ .rise-late ~ .rise-late { --rise-delay: 1000ms; }
   .rise-late ~ .rise-late ~ .rise-late ~ .rise-late { --rise-delay: 1150ms; }
-  @keyframes rise-in { from { opacity: 0; transform: translateY(1.75rem); filter: blur(4px); } }
+  @keyframes rise-in { from { opacity: 0; transform: translateY(1.75rem); } }
 
   /* Photograph reveal: the frame wipes open from its lower edge while the image settles. */
   [data-reveal="photo"].is-revealed:is(.editorial-photo, .frame),
@@ -358,7 +358,7 @@
 
   /* Rotating text-ring monogram badge. */
   .badge { position: relative; display: grid; place-items: center; width: var(--badge-size, 11rem); aspect-ratio: 1; color: var(--gold-light); }
-  .badge-glow { position: absolute; inset: 0; border-radius: 50%; background: rgba(226, 189, 108, 0.15); filter: blur(24px); animation: pulse-glow 3s ease-in-out infinite; }
+  .badge-glow { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(closest-side, rgba(226, 189, 108, 0.2), transparent); animation: pulse-glow 3s ease-in-out infinite; }
   @keyframes pulse-glow { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
   .badge-ring { position: absolute; inset: 0; width: 100%; height: 100%; animation: spin 40s linear infinite; }
   .badge-ring text { fill: currentColor; font-family: var(--font-functional); font-size: 7px; font-weight: 700; letter-spacing: .32em; }
@@ -421,7 +421,7 @@
   .hero-scrim { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(90deg, rgba(21, 13, 8, 0.78), rgba(21, 13, 8, 0.28) 55%, transparent); }
   .hero-scrim::after { content: ""; position: absolute; inset: 40% 0 0; background: linear-gradient(180deg, transparent, rgba(31, 19, 13, 0.92)); }
   .hero-scrim::before { content: ""; position: absolute; inset: 0 0 auto; height: 30%; background: linear-gradient(180deg, rgba(21, 13, 8, 0.55), transparent); }
-  .hero-spot { position: absolute; top: 0; left: 0; z-index: 1; width: clamp(24rem, 55vw, 50rem); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(closest-side, rgba(226, 189, 108, 0.22), transparent 70%); mix-blend-mode: screen; pointer-events: none; transform: translate(calc(var(--px, 55vw) - 50%), calc(var(--py, 45vh) - 50%)); transition: transform 1100ms var(--ease-luxe); }
+  .hero-spot { position: absolute; top: 0; left: 0; z-index: 1; width: clamp(24rem, 55vw, 50rem); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(closest-side, rgba(226, 189, 108, 0.22), transparent 70%); pointer-events: none; will-change: transform; transform: translate(calc(var(--px, 55vw) - 50%), calc(var(--py, 45vh) - 50%)); transition: transform 1100ms var(--ease-luxe); }
   .hero:not([data-pointer]) .hero-spot { animation: spot-drift 18s ease-in-out infinite alternate; }
   @keyframes spot-drift { from { transform: translate(calc(35vw - 50%), calc(30vh - 50%)); } to { transform: translate(calc(70vw - 50%), calc(65vh - 50%)); } }
   .hero-content { position: relative; z-index: 2; width: 100%; padding-top: calc(var(--header-height) + clamp(3rem, 8vh, 6rem)); padding-bottom: clamp(2rem, 4vw, 3.5rem); }
@@ -530,11 +530,11 @@
   @keyframes progress-scale { to { transform: scaleX(1); } }
 
   /* Plating interlude: a pinned scene, scrubbed by scroll. */
-  .plating { position: relative; height: 340svh; view-timeline-name: --plating; view-timeline-axis: block; background: var(--brown-deep); }
+  .plating { position: relative; height: 220svh; view-timeline-name: --plating; view-timeline-axis: block; background: var(--brown-deep); }
   .plating-sticky { position: sticky; top: 0; height: 100svh; overflow: clip; display: flex; align-items: center; }
   .plating-media { position: absolute; inset: 0; }
   .plating-media .editorial-photo { position: absolute; inset: 0; }
-  .plating-media img { object-fit: cover; transform: scale(1); filter: blur(0) brightness(.85); }
+  .plating-media img { object-fit: cover; transform: scale(1); }
   .plating-veil { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(21, 13, 8, 0.82), rgba(21, 13, 8, 0.35) 60%, rgba(21, 13, 8, 0.2)), linear-gradient(180deg, rgba(21, 13, 8, 0.6), transparent 30%, transparent 70%, rgba(21, 13, 8, 0.85)); }
   .plating-copy { position: relative; z-index: 2; width: 100%; }
   .plating-steps { position: relative; min-height: 22rem; margin-top: 1.5rem; }
@@ -552,7 +552,7 @@
   .plating-label { font-size: .52rem; color: rgba(246, 239, 226, 0.5); }
   @supports (animation-timeline: view()) {
     .plating-media img { animation: plating-focus linear both; animation-timeline: --plating; animation-range: contain 0% contain 90%; }
-    @keyframes plating-focus { from { transform: scale(1.18); filter: blur(28px) brightness(.45); } 55% { filter: blur(6px) brightness(.7); } to { transform: scale(1); filter: blur(0) brightness(.85); } }
+    @keyframes plating-focus { from { transform: scale(1.18); } to { transform: scale(1); } }
     .plating-step { animation: plating-step linear both; animation-timeline: --plating; }
     .plating-step:nth-child(1) { animation-range: contain 0% contain 26%; }
     .plating-step:nth-child(2) { animation-range: contain 25% contain 51%; }
@@ -766,7 +766,7 @@
   .journey-track.is-revealed::before { animation-name: line-draw-y; }
   .journey-track li::before { top: .35rem; left: -1.8rem; }
   .bento-card, .bento-card:nth-child(n) { grid-column: 1 / -1; min-height: 16rem; }
-  .plating { height: 300svh; }
+  .plating { height: 200svh; }
   .plating-steps { min-height: 24rem; }
   .recognition-quote .quote-mark { display: none; }
   .footer-top { grid-template-columns: 1fr; }
@@ -863,6 +863,10 @@
   .bar-media { padding: 0 0 2.5rem; }
   .signature-grid > :nth-child(2) { margin-top: 0; }
   .footer-grid { grid-template-columns: 1fr 1fr; }
+}
+/* Tablet: the dishes stack one per row, and a 3:4 portrait photo at full row width is over 800px tall, so they use a landscape frame instead. */
+@media (min-width: 40rem) and (max-width: 64rem) {
+  .signature-photo { aspect-ratio: 16 / 10; }
 }
 @media (max-width: 48rem) {
   .recognition-certificates { grid-template-columns: 1fr 1fr; gap: .75rem; }

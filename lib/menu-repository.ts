@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { MongoServerError } from "mongodb";
 import { collections, type MenuItemDocument } from "./database";
 import { money, type Category, type MenuItem, type MenuInput } from "./menu-types";
@@ -22,7 +23,9 @@ export const getCategories = cache(async (): Promise<Category[]> => {
   return rows.map(({ id, filter, title, kicker, sortOrder }) => ({ id, filter, title, kicker, sortOrder }));
 });
 
-export const getPublicMenu = cache(async () => {
+// The public menu is read on every homepage and /menu visit, so it is cached across requests (tag "public-menu",
+// purged by the admin routes on every write, with a 10-minute backstop) instead of paying a database round trip each time.
+const loadPublicMenu = unstable_cache(async () => {
   const [categories, rows] = await Promise.all([
     getCategories(),
     collections().menuItems.find({ visible: true, available: true }, { projection: { _id: 0 } }).sort({ sortOrder: 1, name: 1, id: 1 }).toArray(),
@@ -34,7 +37,9 @@ export const getPublicMenu = cache(async () => {
     sections: categories.map(category => ({ ...category, items: items.filter(dish => dish.categoryId === category.id).map(dish => ({ ...dish, price: money(dish.priceCents) })) })),
     specials: items.filter(dish => dish.type === "chef-special" || dish.featured),
   };
-});
+}, ["public-menu"], { tags: ["public-menu"], revalidate: 600 });
+
+export const getPublicMenu = cache(loadPublicMenu);
 
 export async function getAdminMenu() {
   await requireAdmin();
